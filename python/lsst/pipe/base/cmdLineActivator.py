@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import absolute_import, division
 #
 # LSST Data Management System
@@ -20,3 +21,60 @@ from __future__ import absolute_import, division
 # the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
+
+import sys
+import imp
+import os
+import inspect
+
+
+def loadSuperTask(superfile):
+    classTaskInstance = None
+    classConfigInstance = None
+    # expected_class = 'MyClass'
+
+    module, file_ext = os.path.splitext(os.path.split(superfile)[-1])
+
+    root = module[:module.upper().find('TASK')]
+
+    print root
+    print
+
+    if file_ext.lower() == '.py':
+        py_mod_task = imp.load_source(module, superfile)
+
+    elif file_ext.lower() == '.pyc':
+        py_mod_task = imp.load_compiled(module, superfile)
+
+    print 'Classes inside %s : \n' % superfile
+    for name, obj in inspect.getmembers(py_mod_task):
+        if inspect.isclass(obj):
+            print module + '.' + obj.__name__
+            if obj.__name__.upper() == (root + 'task').upper():
+                classTaskInstance = obj
+            if obj.__name__.upper() == (root + 'config').upper():
+                classConfigInstance = obj
+
+    return classTaskInstance, classConfigInstance
+
+
+if __name__ == '__main__':
+    superfile = sys.argv[1]
+    SuperTaskClass, SuperTaskConfig = loadSuperTask(superfile)
+
+
+    class CmdLineActTask(SuperTaskClass):
+        def __init__(self, *args, **kwargs):
+            super(CmdLineActTask, self).__init__(*args, **kwargs)
+            self.activator = 'cmdLine'
+
+    print
+    SuperTask = CmdLineActTask()
+    SuperTask.run()
+
+    print 'I am running in %s mode' % SuperTask.print_activator()
+
+
+
+
+
