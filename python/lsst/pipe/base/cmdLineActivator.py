@@ -27,11 +27,16 @@ import imp
 import os
 import inspect
 
+class ClassName(Exception):
+    def __init__(self, msg, errs):
+        super(ClassName, self).__init__(msg)
+        self.errs = errs
+
+
 
 def loadSuperTask(superfile):
     classTaskInstance = None
     classConfigInstance = None
-    # expected_class = 'MyClass'
 
     module, file_ext = os.path.splitext(os.path.split(superfile)[-1])
 
@@ -54,6 +59,9 @@ def loadSuperTask(superfile):
                 classTaskInstance = obj
             if obj.__name__.upper() == (root + 'config').upper():
                 classConfigInstance = obj
+
+    if classTaskInstance == None:
+        raise ClassName(' no superTaskClass found: '+root+'Task or simliar', None)
 
     return classTaskInstance, classConfigInstance
 
