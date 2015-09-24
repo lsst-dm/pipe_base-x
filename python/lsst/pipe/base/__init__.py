@@ -6,3 +6,4 @@ from .cmdLineTask import *
 from .timer import *
 from .superTask import *
 from .superTaskRunner import *
+from .cmdLineActivator import *
