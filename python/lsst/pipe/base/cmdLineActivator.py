@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 #
 # LSST Data Management System
 # Copyright 2008-2013 LSST Corporation.
@@ -42,8 +42,8 @@ def loadSuperTask(superfile):
 
     root = module[:module.upper().find('TASK')]
 
-    print root
-    print
+    print(root)
+    print()
 
     if file_ext.lower() == '.py':
         py_mod_task = imp.load_source(module, superfile)
@@ -51,10 +51,10 @@ def loadSuperTask(superfile):
     elif file_ext.lower() == '.pyc':
         py_mod_task = imp.load_compiled(module, superfile)
 
-    print 'Classes inside %s : \n' % superfile
+    print('Classes inside %s : \n' % superfile)
     for name, obj in inspect.getmembers(py_mod_task):
         if inspect.isclass(obj):
-            print module + '.' + obj.__name__
+            print(module + '.' + obj.__name__)
             if obj.__name__.upper() == (root + 'task').upper():
                 classTaskInstance = obj
             if obj.__name__.upper() == (root + 'config').upper():
@@ -76,11 +76,11 @@ if __name__ == '__main__':
             super(CmdLineActTask, self).__init__(*args, **kwargs)
             self.activator = 'cmdLine'
 
-    print
+    print()
     SuperTask = CmdLineActTask()
     SuperTask.run()
 
-    print 'I am running in %s mode' % SuperTask.print_activator()
+    print('I am running in %s mode' % SuperTask.print_activator())
 
 
 
