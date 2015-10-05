@@ -121,11 +121,11 @@ class Task(object):
                     name = self.get_task_name()
             self._name = name
             self._fullName = self._name
-            # if config == None:
-            #    config = self.ConfigClass()
+            if config == None:
+                config = self.ConfigClass()
             self._taskDict = dict()
 
-        # self.config = config
+        self.config = config
         if log == None:
             log = pexLog.getDefaultLog()
         self.log = pexLog.Log(log, self._fullName)
@@ -139,12 +139,24 @@ class Task(object):
 
     def get_task_name(self):
         """Get class name for object if nothing is available"""
-        return self.__class__.__name__
+        try:
+            return self.__class__.__name__
+        except:
+            raise RuntimeError("name is required for a task unless it has attribute _DefaultName")
 
+    def prerun(self, *args, **kwargs):
+        """
+        Prerun method
+        """
     def run(self, *args, **kwargs):
         """
         Run method
         """
+    def postrun(self, *args, **kwargs):
+        """
+        Postrun method
+        """
+
 
 
     def emptyMetadata(self):
