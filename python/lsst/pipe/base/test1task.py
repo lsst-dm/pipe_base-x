@@ -1,40 +1,47 @@
+"""
+Test1 Task
+"""
 from __future__ import absolute_import, division, print_function
-
-from basetask import Task, TaskError
+from basetask import Task
 from basestruct import Struct
-from superTaskRunner import SuperTaskRunner
-from argumentParser import ArgumentParser
 import lsst.pex.config as pexConfig
-import six
 
 
-class test1Config(pexConfig.Config):
-    doPrint = pexConfig.Field(
+class Test1Config(pexConfig.Config):
+    """
+    Config
+    """
+    do_print = pexConfig.Field(
         dtype=bool,
         doc="Display info",
         default=False,
     )
 
 
-class test1Task(Task):
-    ConfigClass = test1Config  # ConfigClass = pexConfig.Config
+class Test1Task(Task):
+    """
+    Task
+    """
+    ConfigClass = Test1Config  # ConfigClass = pexConfig.Config
+    _default_name = 'test1'
 
     def __init__(self, *args, **kwargs):
-        super(test1Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
+        super(Test1Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
         print('test1Task was initiated')
-        self.activator = None
+        self._activator = None
 
     def run(self):
-        print('I am running test1Task')
-        if self.config.doPrint:
-            print("Displaying Info")
+        """
+        Run method
+        :return:
+        """
+        print('I am running %s Using %s activator' % (self.name, self.activator))
+        if self.config.do_print:
+            print("Displaying Info...")
 
         return Struct(
             val1=10.,
             str1=10)
 
-    def print_activator(self):
-        if self.activator == 'cmdLine':
-            return self.activator
-
-
+    def __str__(self):
+        return str(self.__class__.__name__)+' named : '+self.name

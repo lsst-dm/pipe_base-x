@@ -27,11 +27,11 @@ import imp
 import os
 import inspect
 
+
 class ClassName(Exception):
     def __init__(self, msg, errs):
         super(ClassName, self).__init__(msg)
         self.errs = errs
-
 
 
 def loadSuperTask(superfile):
@@ -61,8 +61,9 @@ def loadSuperTask(superfile):
                 classConfigInstance = obj
 
     if classTaskInstance == None:
-        raise ClassName(' no superTaskClass found: '+root+'Task or simliar', None)
+        raise ClassName(' no superTaskClass found: ' + root + 'Task or simliar', None)
 
+    print(classTaskInstance, classConfigInstance)
     return classTaskInstance, classConfigInstance
 
 
@@ -78,9 +79,9 @@ if __name__ == '__main__':
 
     print()
     SuperTask = CmdLineActTask()
+    #SuperTask.activator = 'cmdLine'
     SuperTask.run()
-
-    print('I am running in %s mode' % SuperTask.print_activator())
+    #print(result)
 
 
 
