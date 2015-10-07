@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env ipython
 from __future__ import absolute_import, division, print_function
 #
 # LSST Data Management System

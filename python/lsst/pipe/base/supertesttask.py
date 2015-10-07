@@ -21,7 +21,7 @@ class SuperTestTask(SuperTask):
     SuperTest
     """
     ConfigClass = SuperTestConfig
-    _default_name = 'Super_Test_1'
+    _default_name = 'Super_Task_1'
 
     def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
         super(SuperTestTask, self).__init__(config, name, parent_task, log, activator)
@@ -50,7 +50,7 @@ class Super2Task(SuperTask):
     SuperTest
     """
     ConfigClass = Super2Config
-    _default_name = 'Big_2'
+    _default_name = 'Big_Task'
 
     def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
         super(Super2Task, self).__init__(config, name, parent_task, log, activator)

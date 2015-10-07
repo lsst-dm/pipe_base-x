@@ -178,13 +178,13 @@ class SuperTask(basetask.Task):
         if self._first is not None:
             self.tree.append(tab1 + tab0 + self._first)
             for edge in self._subgraph.get_edges():
-                ptask = self._task_list[edge.get_destination().replace('dummy_','')]
+                ptask = self._task_list[edge.get_destination().replace('dummy_', '')]
                 if ptask.task_kind == 'Task':
                     self.tree.append(tab1 + tab0 + ptask.name)
                 if ptask.task_kind == 'SuperTask':
                     temp_tree=ptask.get_tree()
                     for branch in temp_tree:
-                        self.tree.append(tab1  + branch)
+                        self.tree.append(tab1 + branch)
 
         return self.tree
 
