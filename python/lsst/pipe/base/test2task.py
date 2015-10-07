@@ -2,7 +2,7 @@
 Test2 Task
 """
 from __future__ import absolute_import, division, print_function
-from basetask import Task
+import basetask
 from basestruct import Struct
 import lsst.pex.config as pexConfig
 
@@ -18,7 +18,7 @@ class Test2Config(pexConfig.Config):
     )
 
 
-class Test2Task(Task):
+class Test2Task(basetask.Task):
     """
     Task
     """
@@ -27,9 +27,9 @@ class Test2Task(Task):
 
     def __init__(self, *args, **kwargs):
         super(Test2Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
-        print('test2Task was initiated')
-        self._activator = None
+        print('%s was initiated' % self.name)
 
+    @basetask.wraprun
     def run(self):
         """
         Run method
@@ -44,3 +44,8 @@ class Test2Task(Task):
 
     def __str__(self):
         return str(self.__class__.__name__)+' named : '+self.name
+
+if __name__ == '__main__':
+
+    MyTest = Test2Task()
+    MyTest.run()

@@ -63,7 +63,6 @@ def loadSuperTask(superfile):
     if classTaskInstance == None:
         raise ClassName(' no superTaskClass found: ' + root + 'Task or simliar', None)
 
-    print(classTaskInstance, classConfigInstance)
     return classTaskInstance, classConfigInstance
 
 
@@ -71,16 +70,12 @@ if __name__ == '__main__':
     superfile = sys.argv[1]
     SuperTaskClass, SuperTaskConfig = loadSuperTask(superfile)
 
-
-    class CmdLineActTask(SuperTaskClass):
-        def __init__(self, *args, **kwargs):
-            super(CmdLineActTask, self).__init__(*args, **kwargs)
-            self.activator = 'cmdLine'
-
     print()
-    SuperTask = CmdLineActTask()
-    #SuperTask.activator = 'cmdLine'
+    SuperTask = SuperTaskClass(activator='cmdLine')
     SuperTask.run()
+    print()
+    SuperTask.print_tree()
+    SuperTask.write_tree()
     #print(result)
 
 

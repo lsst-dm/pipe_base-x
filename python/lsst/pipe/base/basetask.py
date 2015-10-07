@@ -4,11 +4,26 @@ basetask
 from __future__ import absolute_import, division, print_function
 
 import lsstDebug
-
 import lsst.pex.logging as pexLog
 import lsst.daf.base as dafBase
 
 __all__ = ["Task", "TaskError"]
+
+
+def wraprun(func):
+    """
+    Wrapper around run for pre and post run process
+    :param pre:
+    :param post:
+    :return:
+    """
+    def inner(instance,*args, **kwargs):
+        instance.pre_run(*args, **kwargs)
+        temp = func(instance,*args, **kwargs)
+        instance.post_run(*args, **kwargs)
+        return temp
+    return inner
+
 
 
 class TaskError(Exception):
@@ -28,7 +43,7 @@ class Task(object):
     _default_name = None
     _parent_name = None
 
-    def __init__(self, config=None, name=None, parent_task=None, log=None):
+    def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
         """
         !Create a Task
         @param[in] config       configuration for this task (an instance of self.ConfigClass,
@@ -46,8 +61,9 @@ class Task(object):
         @throw RuntimeError if name is None and _DefaultName does not exist.
         """
         self.metadata = dafBase.PropertyList()
-        self._activator = None
         self._completed = False
+        self._task_kind = 'Task'
+        self._activator = activator
 
         if parent_task is not None:
             if name is None:
@@ -76,6 +92,7 @@ class Task(object):
         self.log = pexLog.Log(log, self._fullname)
         self._display = lsstDebug.Info(self.__module__).display
         # self._taskdict[self._fullname] = self
+
 
     @property
     def name(self):
@@ -106,6 +123,17 @@ class Task(object):
             raise RuntimeError("name is required for a task unless it has attribute _default_name")
 
     @property
+    def task_kind(self):
+        """
+        Return Class type
+        """
+        return self._task_kind
+
+    @task_kind.setter
+    def task_kind(self, task_kind):
+        self._task_kind = task_kind
+
+    @property
     def parent_name(self):
         """
         Return name of parent
@@ -119,18 +147,29 @@ class Task(object):
         """
         return self._completed
 
+    @completed.setter
+    def completed(self, completed):
+        self._completed = completed
 
-    def prerun(self, *args, **kwargs):
+
+    def pre_run(self, *args, **kwargs):
         """
         Prerun method
         """
+        #print('Pre run!, activator %s' % self.activator)
+        pass
 
+    def post_run(self, *args, **kwargs):
+        """
+        Postrun method
+        """
+        #print('Done!')
+        self.completed = True
+
+    @wraprun
     def run(self, *args, **kwargs):
         """
         Run method
         """
 
-    def postrun(self, *args, **kwargs):
-        """
-        Postrun method
-        """
+
