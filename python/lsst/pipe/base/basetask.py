@@ -92,6 +92,7 @@ class Task(object):
         self.log = pexLog.Log(log, self._fullname)
         self._display = lsstDebug.Info(self.__module__).display
         # self._taskdict[self._fullname] = self
+        print('%s was initiated' % self.name)
 
 
     @property

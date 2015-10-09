@@ -27,7 +27,7 @@ class Test1Task(basetask.Task):
 
     def __init__(self, *args, **kwargs):
         super(Test1Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
-        print('%s was initiated' % self.name)
+
 
     def pre_run(self):
         pass

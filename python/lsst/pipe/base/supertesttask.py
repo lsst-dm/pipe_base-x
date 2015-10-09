@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from basesupertask import SuperTask
+from basesupertask import SuperTask, SuperSeqTask, SuperParTask
 from test1task import Test1Task
 from test2task import Test2Task
 import lsst.pex.config as pexConfig
@@ -16,7 +16,7 @@ class SuperTestConfig(pexConfig.Config):
         default=2,
     )
 
-class SuperTestTask(SuperTask):
+class SuperTestTask(SuperSeqTask):
     """
     SuperTest
     """
@@ -45,7 +45,7 @@ class Super2Config(pexConfig.Config):
         default=2,
     )
 
-class Super2Task(SuperTask):
+class Super2Task(SuperParTask):
     """
     SuperTest
     """
@@ -54,18 +54,22 @@ class Super2Task(SuperTask):
 
     def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
         super(Super2Task, self).__init__(config, name, parent_task, log, activator)
-        print('%s was initiated' % self.name)
 
-        T4 = Test1Task(name='T4')
-        T5 = Test2Task(name='T5')
+        T1 = Test1Task(name='T1')
+        T2 = Test2Task(name='T2')
+        T3 = Test2Task(name='T3')
         T6 = Test2Task(name='T6')
-        S1 = SuperTestTask(name = 'S1')
-        S2 = SuperTask(name = 'S2Task', config = pexConfig.Config)
+        T8 = Test2Task(name='T8')
+        T9 = Test2Task(name='T9')
+        S1 = SuperSeqTask(name = 'S1Task', config = pexConfig.Config).link(Test1Task(name='T0'), Test1Task(name='T01'))
 
-        S2.link(Test1Task(name='TR7'), Test1Task(name='TR8'))
+        S2 = SuperSeqTask(name = 'S2Task', config = pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
+        S3 = SuperSeqTask(name = 'S3Task', config = pexConfig.Config)
+
+        S3.link(Test1Task(name='T10'), S2, Test1Task(name='T11'))
 
 
-        self.link(T4, S1, T5, S2, T6)
+        self.link(S1, T1, T2, T3, S3,  T8 ,T9 )
 
 
 if __name__ == '__main__':
@@ -73,4 +77,4 @@ if __name__ == '__main__':
     MyTest.write_tree()
     MyTest.run()
     print()
-    MyTest.print_tree()
+    #MyTest.print_tree()

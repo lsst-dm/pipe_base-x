@@ -3,189 +3,179 @@ basetask
 """
 from __future__ import absolute_import, division, print_function
 import pydot
+import networkx as nx
 import basetask
 
 __all__ = ["SuperTask", "NodeTask", "ClusterTask"]
 
 
-class NodeTask(pydot.Node):
-    """
-    NodeTask
-    """
-
-    def __init__(self, taskclass, obj_dict=None, **attrs):
-        """
-        :rtype : object
-        """
-        super(NodeTask, self).__init__(taskclass.name, obj_dict, **attrs)
-        setattr(self, taskclass.name, taskclass)
-
-
-class ClusterTask(pydot.Cluster):
-    """
-    ClusterTask
-    """
-
-    def __init__(self, graph_name='subG', obj_dict=None, suppress_disconnected=False,
-                 simplify=False, **attrs):
-        """
-        :rtype : object
-        """
-        super(ClusterTask, self).__init__(graph_name, obj_dict, suppress_disconnected,
-                                          simplify, **attrs)
-
-    def get_nodes_names(self):
-        """
-        get list of names of nodes
-        :return:
-        """
-        names = []
-        for node in self.get_nodes():
-            names.append(node.get_name())
-        return names
-
-    def get_cluster_names(self):
-        """
-        get list of names of cluster
-        :return:
-        """
-        names = []
-        for node in self.get_subgraphs():
-            names.append(node.get_label())
-        return names
-
 
 class SuperTask(basetask.Task):
     """
-    SuperTask
+    SuperTask Generic
     """
 
     def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
         super(SuperTask, self).__init__(config, name, parent_task, log, activator)
 
-        self._subgraph = ClusterTask(graph_name=self._name  , label=self._name)
-        # Add dummy node for connections between clusters
-        self._subgraph.add_node(pydot.Node(name='dummy_'+self._name, style='invis', shape='point'))
-        self._last = None
-        self._last_kind = None
-        self._first = None
-        self._first_kind = None
-        self._task_list = dict()
-        self._task_kind = 'SuperTask'
+
+    def get_tasks_labels(self):
+        labels = nx.get_node_attributes(self._subgraph, 'label')
+        return labels
 
 
-    def link(self, *subtasks):
+    @property
+    def get_dot(self):
         """
-        Add task or subtasks to the supertask
-        :param subtasks:
+        get subgrapgh
         :return:
         """
-        for task in subtasks:
-            task._parent_name = self.name
-            task._activator = self.activator
-            if task.task_kind == 'Task':
-                if not task.name in self._subgraph.get_nodes_names():
-                    self._subgraph.add_node(NodeTask(task))
-                    self._task_list[task.name] = task  # Might use subclasses instead
-                    if self._last is None:
-                        self._last = task.name
-                        self._last_kind = 'Task'
-                    if self._first is None:
-                        self._first = task.name
-                        self._first_kind = 'Task'
+        self.lines=[]
 
-            elif task.task_kind == 'SuperTask':
-                if not task.name in self._subgraph.get_cluster_names():
-                    self._subgraph.add_subgraph(task._subgraph)
-                    self._task_list[task.name] = task  # Might use subclasses instead
-                    if self._last is None:
-                        self._last = task.name
-                        self._last_kind = 'SuperTask'
-                    if self._first is None:
-                        self._first = task.name
-                        self._first_kind = 'SuperTask'
-            if self._last != task.name:
-                if self._last_kind == 'SuperTask' and task.task_kind == 'Task':
-                    self._subgraph.add_edge(pydot.Edge('dummy_'+self._last, task.name, ltail='cluster_'+self._last))  # Sequential
-                    self._last = task.name
-                    self._last_kind = 'Task'
-
-                elif self._last_kind == 'SuperTask' and task.task_kind == 'SuperTask':
-                    self._subgraph.add_edge(pydot.Edge('dummy_'+self._last, 'dummy_'+task.name, ltail='cluster_'+self._last, lhead='cluster_'+task.name))  # Sequential
-                    self._last = task.name
-                    self._last_kind = 'SuperTask'
-
-                elif self._last_kind == 'Task' and task.task_kind == 'Task':
-                    self._subgraph.add_edge(pydot.Edge(self._last, task.name))  # Sequential
-                    self._last = task.name
-                    self._last_kind = 'Task'
-
-                elif self._last_kind == 'Task' and task.task_kind == 'SuperTask':
-                    self._subgraph.add_edge(pydot.Edge(self._last, 'dummy_'+task.name,  lhead='cluster_'+task.name))  # Sequential
-                    #self._subgraph.add_edge(pydot.Edge('dummy_'+self._last, task.name, ltail='cluster_'+self._last))  # Sequential
-                    self._last = task.name
-                    self._last_kind = 'SuperTask'
-
-        return self
-
-    @basetask.wraprun
-    def run(self):
-        """
-        Run method for supertask, need to check for order
-        :return:
-        """
-        print('I am running %s Using %s activator' % (self.name, self.activator))
         if self._first is not None:
-            self._task_list[self._first].run()
-            #self._task_list[self._first].completed = True
-        for edge in self._subgraph.get_edges():
-            source_task = self._task_list[edge.get_source().replace('dummy_','')]
-            if not source_task.completed:
-                source_task.run()
-                #source_task.completed = True
-            target_task = self._task_list[edge.get_destination().replace('dummy_','')]
-            if not target_task.completed:
-                target_task.run()
-                #target_task.completed = True
-        #self.completed = True
+            if (self._task_kind == 'SuperSeqTask'):
+                self._current = self._first
+            else:
+                self.nodes=self._subgraph.nodes_iter()
+                self._current = self.nodes.next()
+
+        if (self._current._task_kind == 'SuperSeqTask') :
+            self.lines.append('subgraph cluster_%s {' % self._current.name)
+            self.lines.append('label = %s ;' % self._current.name)
+            self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
+            temp_dot = self._current.get_dot
+            for branch in temp_dot:
+                self.lines.append(branch)
+            for branch in self._current.add_edges():
+                self.lines.append(branch)
+            self.lines.append('}')
+        elif (self._current._task_kind == 'SuperParTask') :
+            self.lines.append('subgraph cluster_%s {' % self._current.name)
+            self.lines.append('label = %s ;' % self._current.name)
+            self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
+            temp_dot = self._current.get_dot
+            for branch in temp_dot:
+                self.lines.append(branch)
+        else:
+            self.lines.append(self._current.name+';')
+
+        if self._task_kind == 'SuperSeqTask':
+            while True:
+                if not self._subgraph.successors(self._current):
+                    break
+                else:
+                    self._current = self._subgraph.successors(self._current)[0]
+                    if (self._current._task_kind == 'SuperSeqTask') :
+                        self.lines.append('subgraph cluster_%s {' % self._current.name)
+                        self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
+                        self.lines.append('label = %s ;' % self._current.name)
+                        temp_dot = self._current.get_dot
+                        for branch in temp_dot:
+                            self.lines.append(branch)
+                        for branch in self._current.add_edges():
+                            self.lines.append(branch)
+                        self.lines.append('}')
+                    elif (self._current._task_kind == 'SuperParTask'):
+                        self.lines.append('subgraph cluster_%s {' % self._current.name)
+                        self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
+                        self.lines.append('label = %s ;' % self._current.name)
+                        temp_dot = self._current.get_dot
+                        for branch in temp_dot:
+                            self.lines.append(branch)
+                        self.lines.append('}')
+
+                    else:
+                        self.lines.append(self._current.name+';')
+        else:
+            while True:
+                try:
+                    self._current = self.nodes.next()
+                except StopIteration:
+                    break
+
+                if (self._current._task_kind == 'SuperParTask'):
+                    self.lines.append('subgraph cluster_%s {' % self._current.name)
+                    self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
+                    self.lines.append('label = %s ;' % self._current.name)
+                    temp_dot = self._current.get_dot
+                    for branch in temp_dot:
+                        self.lines.append(branch)
+                    self.lines.append('}')
+                elif (self._current._task_kind == 'SuperSeqTask'):
+                    self.lines.append('subgraph cluster_%s {' % self._current.name)
+                    self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
+                    self.lines.append('label = %s ;' % self._current.name)
+                    temp_dot = self._current.get_dot
+                    for branch in temp_dot:
+                        self.lines.append(branch)
+                    for branch in self._current.add_edges():
+                        self.lines.append(branch)
+                    self.lines.append('}')
+                else:
+                    self.lines.append(self._current.name+';')
+
+        return self.lines
 
 
-    def get_task_list(self):
-        """
-        :return:
-        """
-        return self._task_list
 
     def write_tree(self):
         """
         Write dot file
         :return:
         """
-        temp_g = pydot.Dot(graph_name='SuperTask', compound='true', rankdir='LR')
-        temp_g.add_subgraph(self._subgraph)
-        temp_g.write('graph.dotfile', format='raw', prog='dot')
+        lines = ['digraph %s {' % self.name]
+        lines.append('rankdir=LR;')
+        lines.append('compound=true;')
+        lines.append('subgraph cluster_%s {' % self.name)
+        lines.append('label = %s ;' % self.name)
+        for branch in self.get_dot:
+            lines.append(branch)
+        if self._task_kind == 'SuperSeqTask':
+            for branch in self.add_edges():
+                lines.append(branch)
+        lines.append('}')
+        lines.append('}')
+        F=open('graph.dot','w')
+        for l in lines:
+            F.write(l+' \n')
+        F.close()
 
-
-    def get_tree(self):
+    def get_tree(self,tab='+--'):
         """
         get tree
         :return:
         """
-        tab0 = '+-- '
-        tab1 = '|   '
-        tabn = '    '
-        self.tree = [tab0+self.name]
-        if self._first is not None:
-            self.tree.append(tab1 + tab0 + self._first)
-            for edge in self._subgraph.get_edges():
-                ptask = self._task_list[edge.get_destination().replace('dummy_', '')]
-                if ptask.task_kind == 'Task':
-                    self.tree.append(tab1 + tab0 + ptask.name)
-                if ptask.task_kind == 'SuperTask':
-                    temp_tree=ptask.get_tree()
-                    for branch in temp_tree:
-                        self.tree.append(tab1 + branch)
 
+        self.tree = [tab+self.name]
+        if self._first is not None:
+            self._current = self._first
+        tab = '|    '+tab
+
+        if self._current._task_kind == 'SuperSeqTask':
+            temp_tree = self._current.get_tree(tab=tab+'> ')
+            for branch in temp_tree:
+                self.tree.append(branch)
+        elif self._current._task_kind == 'SuperParTask':
+            temp_tree = self._current.get_tree(tab=tab+'o ')
+            for branch in temp_tree:
+                self.tree.append(branch)
+        else:
+            self.tree.append(tab+self._current.name)
+        while True:
+            if not self._subgraph.successors(self._current):
+                break
+            else:
+                self._current = self._subgraph.successors(self._current)[0]
+                if self._current._task_kind == 'SuperSeqTask':
+                    temp_tree = self._current.get_tree(tab=tab+'> ')
+                    for branch in temp_tree:
+                        self.tree.append(branch)
+                elif self._current._task_kind == 'SuperParTask':
+                    temp_tree = self._current.get_tree(tab=tab+'o ')
+                    for branch in temp_tree:
+                        self.tree.append(branch)
+                else:
+                    self.tree.append(tab+self._current.name)
         return self.tree
 
 
@@ -197,5 +187,134 @@ class SuperTask(basetask.Task):
 
         for branch in self.get_tree():
             print(branch)
+
+
+
+
+class SuperSeqTask(SuperTask):
+    """
+    SuperTask Sequential
+    """
+
+    def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
+        super(SuperSeqTask, self).__init__(config, name, parent_task, log, activator)
+
+        self._subgraph = nx.DiGraph(label = self.name)
+
+        self._last = None
+        self._last_kind = None
+        self._first = None
+        self._first_kind = None
+        self._task_list = dict()
+        self._task_kind = 'SuperSeqTask'
+        self._tasks_kind = None
+        self._current = None
+        self._next = None
+
+
+    def link(self, *subtasks):
+        """
+        Add task or subtasks to the supertask
+        :param subtasks:
+        :return:
+        """
+        for task in subtasks:
+            task._parent_name = self.name
+            task._activator = self.activator
+
+            if task.name not in self.get_tasks_labels():
+                self._subgraph.add_node(task, label = task.name, kind=self._task_kind)
+                if self._first is None:
+                    self._first = task
+                if self._last is None:
+                    self._last = task
+
+                if self._last.name != task.name:
+                    self._subgraph.add_edge(self._last, task)
+                    self._last = task
+        return self
+
+
+    @basetask.wraprun
+    def run(self):
+        """
+        Run method for supertask, need to check for order
+        :return:
+        """
+        print('I am running %s Using %s activator' % (self.name, self.activator))
+        if self._first is not None:
+            self._first.run()
+        self._current = self._first
+        while True:
+            if not self._subgraph.successors(self._current):
+                break
+            else:
+                self._current = self._subgraph.successors(self._current)[0]
+                self._current.run()
+
+
+
+    def add_edges(self):
+        lines=[]
+        for e in self._subgraph.edges():
+            source = e[0].name
+            target = e[1].name
+            opt = []
+            if (e[0]._task_kind == 'SuperSeqTask') or (e[0]._task_kind == 'SuperParTask'):
+                source = 'dummy_'+e[0].name
+                opt.append(' ltail = cluster_'+e[0].name)
+            if (e[1]._task_kind == 'SuperSeqTask') or (e[1]._task_kind == 'SuperParTask'):
+                target = 'dummy_'+e[1].name
+                opt.append(' lhead = cluster_'+e[1].name)
+            temp_line = source + '->' + target
+            if opt:
+                temp_line += ' [ '+ ','.join(opt) + ']'
+            lines.append(temp_line+';')
+        return lines
+
+
+
+class SuperParTask(SuperTask):
+    """
+    SuperTask Parallel (undirected)
+    """
+
+    def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
+        super(SuperParTask, self).__init__(config, name, parent_task, log, activator)
+
+        self._subgraph = nx.Graph(label = self.name)
+        self._task_kind = 'SuperParTask'
+
+        self._last = None
+        self._first = None
+        self._current = None
+
+
+    def link(self, *subtasks):
+        """
+        Add task or subtasks to the supertask
+        :param subtasks:
+        :return:
+        """
+        for task in subtasks:
+            task._parent_name = self.name
+            task._activator = self.activator
+            if task.name not in self.get_tasks_labels():
+                if self._first is None:
+                    self._first = task
+                self._subgraph.add_node(task, label = task.name, kind=self._task_kind)
+        return self
+
+
+    @basetask.wraprun
+    def run(self):
+        """
+        Run method for supertask, need to check for order
+        :return:
+        """
+        print('I am running %s Using %s activator' % (self.name, self.activator))
+        for node in self._subgraph.nodes():
+            node.run()
+
 
 

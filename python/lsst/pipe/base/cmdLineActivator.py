@@ -75,7 +75,7 @@ if __name__ == '__main__':
     SuperTask.run()
     print()
     SuperTask.print_tree()
-    SuperTask.write_tree()
+    #SuperTask.write_tree()
     #print(result)
 
 

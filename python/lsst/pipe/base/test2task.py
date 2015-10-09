@@ -27,7 +27,6 @@ class Test2Task(basetask.Task):
 
     def __init__(self, *args, **kwargs):
         super(Test2Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
-        print('%s was initiated' % self.name)
 
     @basetask.wraprun
     def run(self):
