@@ -51,6 +51,7 @@ class SuperTask(basetask.Task):
             self.lines.append('}')
         elif (self._current._task_kind == 'SuperParTask') :
             self.lines.append('subgraph cluster_%s {' % self._current.name)
+            self.lines.append('node [shape = doublecircle];')
             self.lines.append('label = %s ;' % self._current.name)
             self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
             temp_dot = self._current.get_dot
@@ -77,6 +78,8 @@ class SuperTask(basetask.Task):
                         self.lines.append('}')
                     elif (self._current._task_kind == 'SuperParTask'):
                         self.lines.append('subgraph cluster_%s {' % self._current.name)
+                        self.lines.append('node [shape = doublecircle];')
+
                         self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
                         self.lines.append('label = %s ;' % self._current.name)
                         temp_dot = self._current.get_dot
@@ -95,6 +98,8 @@ class SuperTask(basetask.Task):
 
                 if (self._current._task_kind == 'SuperParTask'):
                     self.lines.append('subgraph cluster_%s {' % self._current.name)
+                    self.lines.append('node [shape = doublecircle];')
+
                     self.lines.append('dummy_%s [shape=point, style=invis];' % self._current.name)
                     self.lines.append('label = %s ;' % self._current.name)
                     temp_dot = self._current.get_dot

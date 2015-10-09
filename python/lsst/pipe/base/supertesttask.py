@@ -45,7 +45,7 @@ class Super2Config(pexConfig.Config):
         default=2,
     )
 
-class Super2Task(SuperParTask):
+class Super2Task(SuperSeqTask):
     """
     SuperTest
     """
@@ -63,8 +63,8 @@ class Super2Task(SuperParTask):
         T9 = Test2Task(name='T9')
         S1 = SuperSeqTask(name = 'S1Task', config = pexConfig.Config).link(Test1Task(name='T0'), Test1Task(name='T01'))
 
-        S2 = SuperSeqTask(name = 'S2Task', config = pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
-        S3 = SuperSeqTask(name = 'S3Task', config = pexConfig.Config)
+        S2 = SuperParTask(name = 'S2Task', config = pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
+        S3 = SuperParTask(name = 'S3Task', config = pexConfig.Config)
 
         S3.link(Test1Task(name='T10'), S2, Test1Task(name='T11'))
 
