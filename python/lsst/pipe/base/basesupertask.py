@@ -6,7 +6,7 @@ import pydot
 import networkx as nx
 import basetask
 
-__all__ = ["SuperTask", "NodeTask", "ClusterTask"]
+__all__ = ["SuperTask", "SuperSeqTask", "SuperParTask"]
 
 
 
@@ -145,42 +145,70 @@ class SuperTask(basetask.Task):
             F.write(l+' \n')
         F.close()
 
-    def get_tree(self,tab='+--'):
+    def get_tree(self,lasttab=' ',tab='+--> '):
         """
         get tree
         :return:
         """
 
-        self.tree = [tab+self.name]
+
+        self.tree = [lasttab+self.name]
         if self._first is not None:
-            self._current = self._first
+            if (self._task_kind == 'SuperSeqTask'):
+                self._current = self._first
+                tab=tab.replace('o','>')
+            if (self._task_kind == 'SuperParTask'):
+                self.nodes=self._subgraph.nodes_iter()
+                self._current = self.nodes.next()
+                tab=tab.replace('>','o')
+
         tab = '|    '+tab
 
         if self._current._task_kind == 'SuperSeqTask':
-            temp_tree = self._current.get_tree(tab=tab+'> ')
+            temp_tree = self._current.get_tree(lasttab=tab, tab=tab.replace('o','>'))
             for branch in temp_tree:
                 self.tree.append(branch)
         elif self._current._task_kind == 'SuperParTask':
-            temp_tree = self._current.get_tree(tab=tab+'o ')
+            temp_tree = self._current.get_tree(lasttab=tab, tab=tab.replace('>','o'))
             for branch in temp_tree:
                 self.tree.append(branch)
         else:
             self.tree.append(tab+self._current.name)
-        while True:
-            if not self._subgraph.successors(self._current):
-                break
-            else:
-                self._current = self._subgraph.successors(self._current)[0]
+
+        if self._task_kind == 'SuperSeqTask':
+            while True:
+                if not self._subgraph.successors(self._current):
+                    break
+                else:
+                    self._current = self._subgraph.successors(self._current)[0]
+                    if self._current._task_kind == 'SuperSeqTask':
+                        temp_tree = self._current.get_tree(lasttab=tab, tab=tab.replace('o','>'))
+                        for branch in temp_tree:
+                            self.tree.append(branch)
+                    elif self._current._task_kind == 'SuperParTask':
+                        temp_tree = self._current.get_tree(lasttab=tab, tab=tab.replace('>','o'))
+                        for branch in temp_tree:
+                            self.tree.append(branch)
+                    else:
+                        self.tree.append(tab+self._current.name)
+        if self._task_kind == 'SuperParTask':
+            while True:
+                try:
+                    self._current = self.nodes.next()
+                except StopIteration:
+                    break
                 if self._current._task_kind == 'SuperSeqTask':
-                    temp_tree = self._current.get_tree(tab=tab+'> ')
+                    temp_tree = self._current.get_tree(lasttab=tab, tab=tab.replace('o','>'))
                     for branch in temp_tree:
                         self.tree.append(branch)
                 elif self._current._task_kind == 'SuperParTask':
-                    temp_tree = self._current.get_tree(tab=tab+'o ')
+                    temp_tree = self._current.get_tree(lasttab=tab, tab=tab.replace('>','o'))
                     for branch in temp_tree:
                         self.tree.append(branch)
                 else:
                     self.tree.append(tab+self._current.name)
+
+
         return self.tree
 
 

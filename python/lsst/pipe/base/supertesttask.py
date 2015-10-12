@@ -63,7 +63,7 @@ class Super2Task(SuperSeqTask):
         T9 = Test2Task(name='T9')
         S1 = SuperSeqTask(name = 'S1Task', config = pexConfig.Config).link(Test1Task(name='T0'), Test1Task(name='T01'))
 
-        S2 = SuperParTask(name = 'S2Task', config = pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
+        S2 = SuperSeqTask(name = 'S2Task', config = pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
         S3 = SuperParTask(name = 'S3Task', config = pexConfig.Config)
 
         S3.link(Test1Task(name='T10'), S2, Test1Task(name='T11'))
@@ -77,4 +77,4 @@ if __name__ == '__main__':
     MyTest.write_tree()
     MyTest.run()
     print()
-    #MyTest.print_tree()
+    MyTest.print_tree()
