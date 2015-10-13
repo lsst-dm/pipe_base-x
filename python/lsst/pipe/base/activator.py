@@ -28,60 +28,83 @@ import inspect
 from .argumentParser import ArgumentParser
 
 
+__all__ = ["CmdLineActivator"]
+
 class ClassName(Exception):
     def __init__(self, msg, errs):
         super(ClassName, self).__init__(msg)
         self.errs = errs
 
 
-def loadSuperTask(superfile):
-    classTaskInstance = None
-    classConfigInstance = None
+class CmdLineActivator(object):
+    def __init__(self, SuperTaskClass):
+        self.SuperTaskClass = SuperTaskClass
 
-    module, file_ext = os.path.splitext(os.path.split(superfile)[-1])
+    def execute(self):
+        self.SuperTaskClass.run()
 
-    root = module[:module.upper().find('TASK')]
+    def display_tree(self):
+        if hasattr(self.SuperTaskClass, 'print_tree'):
+            self.SuperTaskClass.print_tree()
 
-    print(root)
-    print()
+    def generate_dot(self):
+        if hasattr(self.SuperTaskClass, 'write_tree'):
+            self.SuperTaskClass.write_tree()
 
-    if file_ext.lower() == '.py':
-        py_mod_task = imp.load_source(module, superfile)
+    @staticmethod
+    def loadSuperTask(superfile):
+        classTaskInstance = None
+        classConfigInstance = None
 
-    elif file_ext.lower() == '.pyc':
-        py_mod_task = imp.load_compiled(module, superfile)
+        module, file_ext = os.path.splitext(os.path.split(superfile)[-1])
 
-    print('Classes inside %s : \n' % superfile)
-    for name, obj in inspect.getmembers(py_mod_task):
-        if inspect.isclass(obj):
-            print(module + '.' + obj.__name__)
-            if obj.__name__.upper() == (root + 'task').upper():
-                classTaskInstance = obj
-            if obj.__name__.upper() == (root + 'config').upper():
-                classConfigInstance = obj
+        root = module[:module.upper().find('TASK')]
 
-    if classTaskInstance == None:
-        raise ClassName(' no superTaskClass found: ' + root + 'Task or simliar', None)
+        print(root)
+        print()
 
-    return classTaskInstance, classConfigInstance
+        if file_ext.lower() == '.py':
+            py_mod_task = imp.load_source(module, superfile)
+
+        elif file_ext.lower() == '.pyc':
+            py_mod_task = imp.load_compiled(module, superfile)
+
+        print('Classes inside %s : \n' % superfile)
+        for name, obj in inspect.getmembers(py_mod_task):
+            if inspect.isclass(obj):
+                print(module + '.' + obj.__name__)
+                if obj.__name__.upper() == (root + 'task').upper():
+                    classTaskInstance = obj
+                if obj.__name__.upper() == (root + 'config').upper():
+                    classConfigInstance = obj
+
+        if classTaskInstance == None:
+            raise ClassName(' no superTaskClass found: ' + root + 'Task or simliar', None)
+
+        return classTaskInstance, classConfigInstance
 
 
-def parse_and_run():
-    superfile = sys.argv[1]
-    SuperTaskClass, SuperTaskConfig = loadSuperTask(superfile)
+    @classmethod
+    def parse_and_run(cls):
+        superfile = sys.argv[1]
+        SuperTaskClass, SuperTaskConfig = cls.loadSuperTask(superfile)
+        SuperTask = SuperTaskClass(activator='cmdLine')
+        argparse = ArgumentParser(name=SuperTask.name)
+        argparse.add_id_argument(name="--id", datasetType="raw", help="data ID, e.g. --id visit=12345 ccd=1,2")
+        SuperTask.parser = argparse.parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
 
+        CmdLineClass = cls(SuperTask)
+        CmdLineClass.display_tree()
+        CmdLineClass.generate_dot()
+        CmdLineClass.execute()
 
-    # print()
-    SuperTask = SuperTaskClass(activator='cmdLine')
-    print(sys.argv[2:])
-    argparse = ArgumentParser(name=SuperTask.name)
-    argparse.add_id_argument(name="--id", datasetType="raw", help="data ID, e.g. --id visit=12345 ccd=1,2")
-    parse_cmd= argparse.parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
-    SuperTask.run()
-    #print()
-    #SuperTask.print_tree()
-    #SuperTask.write_tree()
-    #print(result)
+        #SuperTask = SuperTaskClass(activator='cmdLine')
+
+        #SuperTask.run()
+        #print()
+        #SuperTask.print_tree()
+        #SuperTask.write_tree()
+        #print(result)
 
 
 
