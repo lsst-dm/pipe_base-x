@@ -3,13 +3,12 @@ basetask
 """
 from __future__ import absolute_import, division, print_function
 import networkx as nx
-import basetask
+from .basetask import Task, TaskError
 
 __all__ = ["SuperTask", "SuperSeqTask", "SuperParTask"]
 
 
-@basetask.wrapclass(basetask.wraprun)
-class SuperTask(basetask.Task):
+class SuperTask(Task):
     """
     SuperTask Generic
     """

@@ -1,4 +1,4 @@
-#!/usr/bin/env ipython
+#!/usr/bin/env ipython --
 from __future__ import absolute_import, division, print_function
 #
 # LSST Data Management System
@@ -26,7 +26,7 @@ import sys
 import imp
 import os
 import inspect
-from argumentParser import ArgumentParser
+from .argumentParser import ArgumentParser
 
 
 class ClassName(Exception):
@@ -67,18 +67,21 @@ def loadSuperTask(superfile):
     return classTaskInstance, classConfigInstance
 
 
-if __name__ == '__main__':
+def parse_and_run():
     superfile = sys.argv[1]
     SuperTaskClass, SuperTaskConfig = loadSuperTask(superfile)
 
 
     # print()
     SuperTask = SuperTaskClass(activator='cmdLine')
-    argparse = ArgumentParser(name=SuperTask.name).parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
+    print(sys.argv[2:])
+    argparse = ArgumentParser(name=SuperTask.name)
+    argparse.add_id_argument(name="--id", datasetType="raw", help="data ID, e.g. --id visit=12345 ccd=1,2")
+    parse_cmd= argparse.parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
     SuperTask.run()
     #print()
-    SuperTask.print_tree()
-    SuperTask.write_tree()
+    #SuperTask.print_tree()
+    #SuperTask.write_tree()
     #print(result)
 
 

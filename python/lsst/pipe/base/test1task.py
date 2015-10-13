@@ -2,8 +2,8 @@
 Test1 Task
 """
 from __future__ import absolute_import, division, print_function
-import basetask
-from basestruct import Struct
+import lsst.pipe.base.basetask as basetask
+from lsst.pipe.base.basestruct import Struct
 import lsst.pex.config as pexConfig
 
 
@@ -17,7 +17,6 @@ class Test1Config(pexConfig.Config):
         default=False,
     )
 
-@basetask.wrapclass(basetask.wraprun)
 class Test1Task(basetask.Task):
     """
     Task

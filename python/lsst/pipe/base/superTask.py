@@ -32,7 +32,7 @@ __all__ = ["SuperTask"]
 
 class SuperTask(Task, SuperTaskRunner):
 
-    RunnerClass = TaskRunner
+    RunnerClass = SuperTaskRunner
     canMultiprocess = True
 
     @classmethod

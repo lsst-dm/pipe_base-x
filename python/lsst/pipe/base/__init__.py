@@ -7,3 +7,5 @@ from .timer import *
 from .superTask import *
 from .superTaskRunner import *
 from .cmdLineActivator import *
+from .basetask import *
+from .basesupertask import *
