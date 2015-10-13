@@ -17,7 +17,7 @@ class Test1Config(pexConfig.Config):
         default=False,
     )
 
-
+@basetask.wrapclass(basetask.wraprun)
 class Test1Task(basetask.Task):
     """
     Task
@@ -31,9 +31,8 @@ class Test1Task(basetask.Task):
 
     def pre_run(self):
         pass
-        #print("Custom pre run commands")
+        print("Custom pre run commands")
 
-    @basetask.wraprun
     def run(self):
         """
         Run method

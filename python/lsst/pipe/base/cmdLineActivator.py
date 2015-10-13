@@ -26,6 +26,7 @@ import sys
 import imp
 import os
 import inspect
+from argumentParser import ArgumentParser
 
 
 class ClassName(Exception):
@@ -70,12 +71,14 @@ if __name__ == '__main__':
     superfile = sys.argv[1]
     SuperTaskClass, SuperTaskConfig = loadSuperTask(superfile)
 
-    print()
+
+    # print()
     SuperTask = SuperTaskClass(activator='cmdLine')
+    argparse = ArgumentParser(name=SuperTask.name).parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
     SuperTask.run()
-    print()
+    #print()
     SuperTask.print_tree()
-    #SuperTask.write_tree()
+    SuperTask.write_tree()
     #print(result)
 
 

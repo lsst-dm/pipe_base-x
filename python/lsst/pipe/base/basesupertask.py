@@ -2,14 +2,13 @@
 basetask
 """
 from __future__ import absolute_import, division, print_function
-import pydot
 import networkx as nx
 import basetask
 
 __all__ = ["SuperTask", "SuperSeqTask", "SuperParTask"]
 
 
-
+@basetask.wrapclass(basetask.wraprun)
 class SuperTask(basetask.Task):
     """
     SuperTask Generic
@@ -18,6 +17,15 @@ class SuperTask(basetask.Task):
     def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
         super(SuperTask, self).__init__(config, name, parent_task, log, activator)
 
+        self._parser = None
+
+    @property
+    def parser(self):
+        return self._parser
+
+    @parser.setter
+    def parser(self, parser):
+        self._parser = parser
 
     def get_tasks_labels(self):
         labels = nx.get_node_attributes(self._subgraph, 'label')
@@ -121,8 +129,6 @@ class SuperTask(basetask.Task):
 
         return self.lines
 
-
-
     def write_tree(self):
         """
         Write dot file
@@ -224,6 +230,8 @@ class SuperTask(basetask.Task):
 
 
 
+
+
 class SuperSeqTask(SuperTask):
     """
     SuperTask Sequential
@@ -268,7 +276,6 @@ class SuperSeqTask(SuperTask):
         return self
 
 
-    @basetask.wraprun
     def run(self):
         """
         Run method for supertask, need to check for order
@@ -339,7 +346,6 @@ class SuperParTask(SuperTask):
         return self
 
 
-    @basetask.wraprun
     def run(self):
         """
         Run method for supertask, need to check for order

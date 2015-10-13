@@ -56,6 +56,7 @@ class Super2Task(SuperSeqTask):
         super(Super2Task, self).__init__(config, name, parent_task, log, activator)
 
         T1 = Test1Task(name='T1')
+
         T2 = Test2Task(name='T2')
         T3 = Test2Task(name='T3')
         T6 = Test2Task(name='T6')
