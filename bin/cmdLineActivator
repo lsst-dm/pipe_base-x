@@ -1,0 +1,3 @@
+#!/usr/bin/env ipython --
+from lsst.pipe.base.Activator import *
+parse_and_run()
