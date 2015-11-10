@@ -25,10 +25,15 @@ import sys
 import imp
 import os
 import inspect
+import pkgutil
+import pyclbr
+import lsst.pipe.base.examples
+
 from .argumentParser import ArgumentParser
 
 
 __all__ = ["CmdLineActivator"]
+
 
 class ClassName(Exception):
     def __init__(self, msg, errs):
@@ -52,42 +57,65 @@ class CmdLineActivator(object):
             self.SuperTaskClass.write_tree()
 
     @staticmethod
-    def loadSuperTask(superfile):
+    def loadSuperTask(super_taskname):
         classTaskInstance = None
         classConfigInstance = None
+        super_module = None
 
-        module, file_ext = os.path.splitext(os.path.split(superfile)[-1])
 
-        root = module[:module.upper().find('TASK')]
+        mod_names = []
 
-        print(root)
-        print()
+        package = lsst.pipe.base.examples
+        for _, modname, _ in pkgutil.iter_modules(package.__path__): mod_names.append(modname)
 
-        if file_ext.lower() == '.py':
-            py_mod_task = imp.load_source(module, superfile)
 
-        elif file_ext.lower() == '.pyc':
-            py_mod_task = imp.load_compiled(module, superfile)
+        for module in mod_names:
+            mod_classes = [mk.upper() for mk in pyclbr.readmodule(module, path=package.__path__).keys()]
+            if super_taskname.upper() in mod_classes:
+                super_module = module
 
-        print('Classes inside %s : \n' % superfile)
+        if super_module:
+            py_mod_task=__import__(package.__name__+'.'+super_module, fromlist=" ")
+        else:
+            print("\nSuper Task %s not found!\n" % super_taskname)
+            return classTaskInstance, classConfigInstance
+        #module, file_ext = os.path.splitext(os.path.split(superfile)[-1])
+
+        #root = module[:module.upper().find('TASK')]
+
+        #print(root)
+        #print()
+
+        #if file_ext.lower() == '.py':
+        #    py_mod_task = imp.load_source(module, superfile)
+
+        #elif file_ext.lower() == '.pyc':
+        #    py_mod_task = imp.load_compiled(module, superfile)
+
+        print('\nClasses inside module %s : \n ' % (package.__name__+'.'+super_module))
         for name, obj in inspect.getmembers(py_mod_task):
             if inspect.isclass(obj):
-                print(module + '.' + obj.__name__)
-                if obj.__name__.upper() == (root + 'task').upper():
+                if obj.__module__ == py_mod_task.__name__:
+                    print(super_module + '.' + obj.__name__)
+                if obj.__name__.upper() == super_taskname.upper():
                     classTaskInstance = obj
-                if obj.__name__.upper() == (root + 'config').upper():
+                if obj.__name__.upper() == (super_taskname[:-4]+'Config').upper():
                     classConfigInstance = obj
 
         if classTaskInstance == None:
-            raise ClassName(' no superTaskClass found: ' + root + 'Task or simliar', None)
+            raise ClassName(' no superTaskClass %s found: Task or similiar' % (super_taskname), None)
+
+        if classConfigInstance == None:
+            raise ClassName(' no superConfig Class %s found: Task or similiar' % (super_taskname.replace('Task','Config')), None)
 
         return classTaskInstance, classConfigInstance
 
 
     @classmethod
     def parse_and_run(cls):
-        superfile = sys.argv[1]
-        SuperTaskClass, SuperTaskConfig = cls.loadSuperTask(superfile)
+        super_taskname = sys.argv[1]
+        SuperTaskClass, SuperTaskConfig = cls.loadSuperTask(super_taskname)
+
         SuperTask = SuperTaskClass(activator='cmdLine')
         argparse = ArgumentParser(name=SuperTask.name)
         argparse.add_id_argument(name="--id", datasetType="raw", help="data ID, e.g. --id visit=12345 ccd=1,2")
@@ -97,15 +125,6 @@ class CmdLineActivator(object):
         CmdLineClass.display_tree()
         CmdLineClass.generate_dot()
         CmdLineClass.execute()
-
-        #SuperTask = SuperTaskClass(activator='cmdLine')
-
-        #SuperTask.run()
-        #print()
-        #SuperTask.print_tree()
-        #SuperTask.write_tree()
-        #print(result)
-
 
 
 
