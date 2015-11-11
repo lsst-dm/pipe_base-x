@@ -145,7 +145,7 @@ class SuperTask(Task):
                 lines.append(branch)
         lines.append('}')
         lines.append('}')
-        F=open('graph.dot','w')
+        F=open(self.name+'.dot','w')
         for l in lines:
             F.write(l+' \n')
         F.close()
