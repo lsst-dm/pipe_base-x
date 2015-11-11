@@ -114,9 +114,7 @@ class CmdLineActivator(object):
     @classmethod
     def parse_and_run(cls):
         super_taskname = sys.argv[1]
-        print('1')
         SuperTaskClass, SuperTaskConfig = cls.loadSuperTask(super_taskname)
-        print('2')
         SuperTask = SuperTaskClass(activator='cmdLine')
         argparse = ArgumentParser(name=SuperTask.name)
         argparse.add_id_argument(name="--id", datasetType="raw", help="data ID, e.g. --id visit=12345 ccd=1,2")
