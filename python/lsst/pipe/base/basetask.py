@@ -85,25 +85,23 @@ class Task(object):
             if name is None:
                 name = getattr(self, "_default_name", None)
                 if name is None:
-                    pass
-                    # raise RuntimeError("name is required for a task unless
-                    # it has attribute _DefaultName")
-                try:
-                    name = self._default_name
-                except AttributeError:
-                    name = self.get_task_name()
+                    name = getattr(self, "_DefaultName", None)
+                    if name is None:
+                        name = self.get_task_name()
+                    if name is None:
+                        raise RuntimeError("name is required for a task unless it has attribute _DefaultName")
             self._name = name
             self._fullname = self._name
             if config is None:
                 config = self.ConfigClass()
-            #self._taskdict = dict()
+            self._taskdict = dict()
 
         self.config = config
         if log is None:
             log = pexLog.getDefaultLog()
         self.log = pexLog.Log(log, self._fullname)
         self._display = lsstDebug.Info(self.__module__).display
-        # self._taskdict[self._fullname] = self
+        self._taskdict[self._fullname] = self
         print('%s was initiated' % self.name)
 
 
@@ -129,8 +127,6 @@ class Task(object):
     def get_task_name(self):
         """Get class name for object if nothing is available"""
         try:
-            print(self.__module__, self.__class__.__bases__, self.__class__.__name__)
-            print()
             return self.__class__.__name__
         except:
             raise RuntimeError("name is required for a task unless it has attribute _default_name")
