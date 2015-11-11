@@ -23,6 +23,7 @@
 from lsst.afw.display.ds9 import mtv
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
+import lsst.pipe.base.basetask as basetask
 from .exampleStatsTasks import ExampleSigmaClippedStatsTask
 
 # The following block adds links to this task from the Task Documentation page.
@@ -48,7 +49,7 @@ class ExampleCmdLineConfig(pexConfig.Config):
         default = False,
     )
 
-class ExampleCmdLineTask(pipeBase.CmdLineTask):
+class ExampleCmdLineTask(basetask.Task):
     """!Example command-line task that computes simple statistics on an image
 
     \section pipeTasks_ExampleCmdLineTask_Contents Contents
@@ -107,7 +108,8 @@ class ExampleCmdLineTask(pipeBase.CmdLineTask):
 
         Call the parent class constructor and make the "stats" subtask from the config field of the same name.
         """
-        pipeBase.CmdLineTask.__init__(self, *args, **kwargs)
+        super(ExampleCmdLineTask, self).__init__(*args, **kwargs)
+        #pipeBase.CmdLineTask.__init__(self, *args, **kwargs)
         self.makeSubtask("stats")
     
     @pipeBase.timeMethod

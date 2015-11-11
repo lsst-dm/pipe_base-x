@@ -101,6 +101,7 @@ class CmdLineActivator(object):
                     classTaskInstance = obj
                 if obj.__name__.upper() == (super_taskname[:-4]+'Config').upper():
                     classConfigInstance = obj
+        print()
 
         if classTaskInstance == None:
             raise ClassName(' no superTaskClass %s found: Task or similiar' % (super_taskname), None)

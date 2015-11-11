@@ -81,6 +81,10 @@ class Task(object):
             if name is None:
                 raise RuntimeError("name is required for a subtask")
             self._name = name
+            self._fullname = parent_task._computeFullName(name)
+            if config == None:
+                config = getattr(parent_task.config, name)
+            self._taskdict = parent_task._taskdict
         else:
             if name is None:
                 name = getattr(self, "_default_name", None)
@@ -280,7 +284,7 @@ class Task(object):
         configurableField = getattr(self.config, name, None)
         if configurableField is None:
             raise KeyError("%s's config does not have field %r" % (self.getFullName, name))
-        subtask = configurableField.apply(name=name, parentTask=self, **keyArgs)
+        subtask = configurableField.apply(name=name, parent_task=self, **keyArgs)
         setattr(self, name, subtask)
 
     @contextlib.contextmanager
@@ -333,4 +337,4 @@ class Task(object):
         @param[in] name     brief name of subtask or metadata item
         @return the full name: the "name" argument prefixed by the full task name and a period.
         """
-        return "%s.%s" % (self._fullName, name)
+        return "%s.%s" % (self._fullname, name)
