@@ -30,67 +30,6 @@ from lsst.pex.logging import getDefaultLog
 
 __all__ = ["SuperTaskRunner"]
 
-def _poolFunctionWrapper(function, arg):
-    """Wrapper around function to catch exceptions that don't inherit from Exception
-
-    Such exceptions aren't caught by multiprocessing, which causes the slave
-    process to crash and you end up hitting the timeout.
-    """
-    try:
-        return function(arg)
-    except Exception:
-        raise # No worries
-    except:
-        # Need to wrap the exception with something multiprocessing will recognise
-        cls, exc, tb = sys.exc_info()
-        log = getDefaultLog()
-        log.warn("Unhandled exception %s (%s):\n%s" % (cls.__name__, exc, traceback.format_exc()))
-        raise Exception("Unhandled exception: %s (%s)" % (cls.__name__, exc))
-
-def _runPool(pool, timeout, function, iterable):
-    """Wrapper around pool.map_async, to handle timeout
-
-    This is required so as to trigger an immediate interrupt on the KeyboardInterrupt (Ctrl-C); see
-    http://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool
-
-    Further wraps the function in _poolFunctionWrapper to catch exceptions
-    that don't inherit from Exception.
-    """
-    return pool.map_async(functools.partial(_poolFunctionWrapper, function), iterable).get(timeout)
-
-@contextlib.contextmanager
-def profile(filename, log=None):
-    """!Context manager for profiling with cProfile
-
-    @param filename     filename to which to write profile (profiling disabled if None or empty)
-    @param log          log object for logging the profile operations
-
-    If profiling is enabled, the context manager returns the cProfile.Profile object (otherwise
-    it returns None), which allows additional control over profiling.  You can obtain this using
-    the "as" clause, e.g.:
-
-        with profile(filename) as prof:
-            runYourCodeHere()
-
-    The output cumulative profile can be printed with a command-line like:
-
-        python -c 'import pstats; pstats.Stats("<filename>").sort_stats("cumtime").print_stats(30)'
-    """
-    if not filename:
-        # Nothing to do
-        yield
-        return
-    from cProfile import Profile
-    profile = Profile()
-    if log is not None:
-        log.info("Enabling cProfile profiling")
-    profile.enable()
-    yield profile
-    profile.disable()
-    profile.dump_stats(filename)
-    if log is not None:
-        log.info("cProfile stats written to %s" % filename)
-
 
 class SuperTaskRunner(object):
 

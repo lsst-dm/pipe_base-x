@@ -27,6 +27,10 @@ import os
 import inspect
 import pkgutil
 import pyclbr
+import traceback
+import functools
+import contextlib
+from lsst.pex.logging import getDefaultLog
 import lsst.pipe.base.examples
 
 from .argumentParser import ArgumentParser
@@ -35,6 +39,39 @@ from .argumentParser import ArgumentParser
 __all__ = ["CmdLineActivator"]
 
 
+@contextlib.contextmanager
+def profile(filename, log=None):
+    """!Context manager for profiling with cProfile
+
+    @param filename     filename to which to write profile (profiling disabled if None or empty)
+    @param log          log object for logging the profile operations
+
+    If profiling is enabled, the context manager returns the cProfile.Profile object (otherwise
+    it returns None), which allows additional control over profiling.  You can obtain this using
+    the "as" clause, e.g.:
+
+        with profile(filename) as prof:
+            runYourCodeHere()
+
+    The output cumulative profile can be printed with a command-line like:
+
+        python -c 'import pstats; pstats.Stats("<filename>").sort_stats("cumtime").print_stats(30)'
+    """
+    if not filename:
+        # Nothing to do
+        yield
+        return
+    from cProfile import Profile
+    profile = Profile()
+    if log is not None:
+        log.info("Enabling cProfile profiling")
+    profile.enable()
+    yield profile
+    profile.disable()
+    profile.dump_stats(filename)
+    if log is not None:
+        log.info("cProfile stats written to %s" % filename)
+
 class ClassName(Exception):
     def __init__(self, msg, errs):
         super(ClassName, self).__init__(msg)
@@ -42,19 +79,65 @@ class ClassName(Exception):
 
 
 class CmdLineActivator(object):
-    def __init__(self, SuperTaskClass):
-        self.SuperTaskClass = SuperTaskClass
+    def __init__(self, SuperTask, parsed_cmd, return_results=False):
+
+        self.SuperTask = SuperTask
+        self.return_results = bool(return_results)
+        self.config = parsed_cmd.config
+        self.log = parsed_cmd.log
+        self.doRaise = bool(parsed_cmd.doraise)
+        self.clobber_config = bool(parsed_cmd.clobberConfig)
+        #self.do_backup = not bool(parsed_cmd.noBackupConfig)
+        self.parsed_cmd = parsed_cmd
+        self.num_processes = 1 #int(getattr(parsed_cmd, 'processes', 1))
+
+
+
+    def make_task(self, parsedCmd=None, args=None):
+        return self.SuperTask.__class__(config=self.config, log=self.log, activator='cmdLine')
+
+    def precall(self):
+        return True
 
     def execute(self):
-        self.SuperTaskClass.run()
+        result_list=[]
+
+        if self.precall():
+            profile_name = self.parsed_cmd.profile if hasattr(self.parsed_cmd, "profile") else None
+            log = self.parsed_cmd.log
+            target_list = self.get_target_list(self.parsed_cmd)
+
+            if len(target_list) > 0:
+                with profile(profile_name, log):
+                    # Run the task using self.__call__
+                    #result_list = map(self, target_list)
+                    print(len(target_list))
+                    for target in target_list:
+                        data_ref , kwargs = target
+                        result = None
+                        super_task = self.make_task(args=target)
+                        result = super_task.run(data_ref, **kwargs)
+
+            else:
+                log.warn("Not running the task because there is no data to process; "
+                    "you may preview data using \"--show data\"")
+
 
     def display_tree(self):
-        if hasattr(self.SuperTaskClass, 'print_tree'):
-            self.SuperTaskClass.print_tree()
+        if hasattr(self.SuperTask, 'print_tree'):
+            self.SuperTask.print_tree()
 
     def generate_dot(self):
-        if hasattr(self.SuperTaskClass, 'write_tree'):
-            self.SuperTaskClass.write_tree()
+        if hasattr(self.SuperTask, 'write_tree'):
+            self.SuperTask.write_tree()
+
+
+
+    @staticmethod
+    def get_target_list(parsed_cmd, **kwargs):
+        return [(ref, kwargs) for ref in parsed_cmd.id.refList]
+
+
 
     @staticmethod
     def loadSuperTask(super_taskname):
@@ -119,9 +202,9 @@ class CmdLineActivator(object):
         SuperTask = SuperTaskClass(activator='cmdLine')
         argparse = ArgumentParser(name=SuperTask.name)
         argparse.add_id_argument(name="--id", datasetType="raw", help="data ID, e.g. --id visit=12345 ccd=1,2")
-        SuperTask.parser = argparse.parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
+        parser = argparse.parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
 
-        CmdLineClass = cls(SuperTask)
+        CmdLineClass = cls(SuperTask, parser)
         CmdLineClass.display_tree()
         CmdLineClass.generate_dot()
         CmdLineClass.execute()
