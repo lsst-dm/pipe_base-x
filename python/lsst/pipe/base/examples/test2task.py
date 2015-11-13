@@ -28,7 +28,7 @@ class Test2Task(Task):
     def __init__(self, *args, **kwargs):
         super(Test2Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
 
-    def run(self):
+    def run(self, dataRef):
         """
         Run method
         :return:

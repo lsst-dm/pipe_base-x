@@ -32,7 +32,7 @@ class Test1Task(basetask.Task):
         pass
         print("Custom pre run commands")
 
-    def run(self):
+    def run(self, dataRef):
         """
         Run method
         :return:

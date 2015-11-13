@@ -2,7 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 from lsst.pipe.base.basesupertask import SuperTask, SuperSeqTask, SuperParTask
 from lsst.pipe.base.examples.test1task import Test1Task
-from .test2task import Test2Task
+from lsst.pipe.base.examples.test2task import Test2Task
+
+#from .test2task import Test2Task
 import lsst.pex.config as pexConfig
 
 
