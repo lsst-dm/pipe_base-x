@@ -34,10 +34,17 @@ from lsst.pex.logging import getDefaultLog
 import lsst.pipe.base.examples
 
 from .argumentParser import ArgumentParser
+import argparse as argp
 
 
 __all__ = ["CmdLineActivator"]
 
+
+class ActivatorParser(argp.ArgumentParser):
+    def error(self, message):
+        sys.stderr.write('error: %s\n' % message)
+        self.print_help()
+        sys.exit(2)
 
 @contextlib.contextmanager
 def profile(filename, log=None):
@@ -195,14 +202,58 @@ class CmdLineActivator(object):
         return classTaskInstance, classConfigInstance
 
 
+    @staticmethod
+    def get_tasks():
+
+        tasks_list =[]
+
+        mod_names = []
+
+        package = lsst.pipe.base.examples
+        for _, modname, _ in pkgutil.iter_modules(package.__path__): mod_names.append(modname)
+
+
+        for module in mod_names:
+            task_module=package.__name__+'.'+module+'.'
+            mod_classes = [mk    for mk in pyclbr.readmodule(module, path=package.__path__).keys()]
+            for m in mod_classes:
+                tasks_list.append(task_module+'.'+m)
+        return tasks_list
+
+
+
     @classmethod
     def parse_and_run(cls):
-        super_taskname = sys.argv[1]
+        parser_activator = ActivatorParser(description='CmdLine Activator')
+        parser_activator.add_argument('taskname', type=str, help='name of the task')
+        parser_activator.add_argument('-lt','--list_tasks', action="store_true", default=False, help='list tasks available')
+        parser_activator.add_argument('--extras', action="store_true", default=False, help='Add extra parameters after it')
+
+
+        try:
+            idx=sys.argv.index('--extras')
+        except ValueError:
+            idx = -1
+
+
+        args1 = sys.argv[1:idx]
+        args = parser_activator.parse_args(args1)
+
+        if args.list_tasks :
+            print('Yay')
+            for i in cls.get_tasks():
+                print(i)
+            sys.exit()
+
+        args2 = sys.argv[idx+1:]
+
+
+        super_taskname = args.taskname
         SuperTaskClass, SuperTaskConfig = cls.loadSuperTask(super_taskname)
         SuperTask = SuperTaskClass(activator='cmdLine')
         argparse = ArgumentParser(name=SuperTask.name)
         argparse.add_id_argument(name="--id", datasetType="raw", help="data ID, e.g. --id visit=12345 ccd=1,2")
-        parser = argparse.parse_args(config=SuperTask.ConfigClass(), args=sys.argv[2:])
+        parser = argparse.parse_args(config=SuperTask.ConfigClass(), args=args2)
 
         CmdLineClass = cls(SuperTask, parser)
         CmdLineClass.display_tree()
