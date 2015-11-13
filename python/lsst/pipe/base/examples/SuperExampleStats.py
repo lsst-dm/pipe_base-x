@@ -32,6 +32,7 @@ class AllStatTask(SuperSeqTask):
 
         Mean2 = ExampleMeanTask(name='mean_2')
         Mean2.config.numSigmaClip = 5.0
+        #Mean2 =  ExampleMeanTask(name='mean_2', config= Mean2.config)
 
         Std = ExampleStdTask()
 

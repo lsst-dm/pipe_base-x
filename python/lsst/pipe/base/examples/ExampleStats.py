@@ -1,9 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from lsst.pipe.base.basesupertask import SuperTask, SuperSeqTask, SuperParTask
-from lsst.pipe.base.examples.test1task import Test1Task
-from lsst.pipe.base.examples.test2task import Test2Task
-
 import lsst.pex.config as pexConfig
 
 from lsst.afw.image import MaskU
@@ -53,6 +49,7 @@ class ExampleStdConfig(pexConfig.Config):
         default = 2,
     )
 
+@basetask.wrapclass(basetask.wraprun)
 class ExampleMeanTask(basetask.Task):
 
     ConfigClass = ExampleMeanConfig
@@ -63,8 +60,8 @@ class ExampleMeanTask(basetask.Task):
         super(ExampleMeanTask, self).__init__(*args, **kwargs)
         #basetask.Task.__init__(self, *args, **kwargs)
 
+    def pre_run(self):
         self._badPixelMask = MaskU.getPlaneBitMask(self.config.badMaskPlanes)
-
         self._statsControl = afwMath.StatisticsControl()
         self._statsControl.setNumSigmaClip(self.config.numSigmaClip)
         self._statsControl.setNumIter(self.config.numIter)
@@ -87,7 +84,7 @@ class ExampleMeanTask(basetask.Task):
         )
         return self.output
 
-
+@basetask.wrapclass(basetask.wraprun)
 class ExampleStdTask(basetask.Task):
 
     ConfigClass = ExampleMeanConfig
@@ -98,8 +95,9 @@ class ExampleStdTask(basetask.Task):
         super(ExampleStdTask, self).__init__(*args, **kwargs)
         #basetask.Task.__init__(self, *args, **kwargs)
 
-        self._badPixelMask = MaskU.getPlaneBitMask(self.config.badMaskPlanes)
 
+    def pre_run(self):
+        self._badPixelMask = MaskU.getPlaneBitMask(self.config.badMaskPlanes)
         self._statsControl = afwMath.StatisticsControl()
         self._statsControl.setNumSigmaClip(self.config.numSigmaClip)
         self._statsControl.setNumIter(self.config.numIter)
