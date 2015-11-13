@@ -217,7 +217,8 @@ class CmdLineActivator(object):
             task_module=package.__name__+'.'+module+'.'
             mod_classes = [mk    for mk in pyclbr.readmodule(module, path=package.__path__).keys()]
             for m in mod_classes:
-                tasks_list.append(task_module+'.'+m)
+                if m.upper().find('TASK') > -1 and m not in ['SuperParTask', 'SuperSeqTask', 'Task', 'SuperTask']:
+                    tasks_list.append(task_module+m)
         return tasks_list
 
 
@@ -225,22 +226,20 @@ class CmdLineActivator(object):
     @classmethod
     def parse_and_run(cls):
         parser_activator = ActivatorParser(description='CmdLine Activator')
-        parser_activator.add_argument('taskname', type=str, help='name of the task')
+        parser_activator.add_argument('taskname', nargs='?', type=str, help='name of the task')
         parser_activator.add_argument('-lt','--list_tasks', action="store_true", default=False, help='list tasks available')
         parser_activator.add_argument('--extras', action="store_true", default=False, help='Add extra parameters after it')
 
 
         try:
             idx=sys.argv.index('--extras')
+            args1 = sys.argv[1:idx]
+            args = parser_activator.parse_args(args1)
         except ValueError:
-            idx = -1
+            args = parser_activator.parse_args()
 
-
-        args1 = sys.argv[1:idx]
-        args = parser_activator.parse_args(args1)
 
         if args.list_tasks :
-            print('Yay')
             for i in cls.get_tasks():
                 print(i)
             sys.exit()
