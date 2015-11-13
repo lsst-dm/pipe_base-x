@@ -31,14 +31,17 @@ import traceback
 import functools
 import contextlib
 from lsst.pex.logging import getDefaultLog
-import lsst.pipe.base.examples
-
 from .argumentParser import ArgumentParser
 import argparse as argp
+import importlib
 
 
 __all__ = ["CmdLineActivator"]
 
+task_packages = {'lsst.pipe.base.examples':None}
+
+for pkg in task_packages.keys():
+   task_packages[pkg]=importlib.import_module(pkg)
 
 class ActivatorParser(argp.ArgumentParser):
     def error(self, message):
@@ -153,34 +156,22 @@ class CmdLineActivator(object):
         super_module = None
 
 
-        mod_names = []
+        for package_name, package in task_packages.iteritems():
+            mod_names = []
+            for _, modname, _ in pkgutil.iter_modules(package.__path__): mod_names.append(modname)
 
-        package = lsst.pipe.base.examples
-        for _, modname, _ in pkgutil.iter_modules(package.__path__): mod_names.append(modname)
-
-
-        for module in mod_names:
-            mod_classes = [mk.upper() for mk in pyclbr.readmodule(module, path=package.__path__).keys()]
-            if super_taskname.upper() in mod_classes:
-                super_module = module
+            for module in mod_names:
+                classes_map = pyclbr.readmodule(module, path=package.__path__)
+                mod_classes = [mk.upper() for mk in classes_map.keys() if classes_map[mk].module.upper() == module.upper()]
+                if super_taskname.upper() in mod_classes:
+                    super_module = module
+                    break    # First instance
 
         if super_module:
             py_mod_task=__import__(package.__name__+'.'+super_module, fromlist=" ")
         else:
             print("\nSuper Task %s not found!\n" % super_taskname)
             return classTaskInstance, classConfigInstance
-        #module, file_ext = os.path.splitext(os.path.split(superfile)[-1])
-
-        #root = module[:module.upper().find('TASK')]
-
-        #print(root)
-        #print()
-
-        #if file_ext.lower() == '.py':
-        #    py_mod_task = imp.load_source(module, superfile)
-
-        #elif file_ext.lower() == '.pyc':
-        #    py_mod_task = imp.load_compiled(module, superfile)
 
         print('\nClasses inside module %s : \n ' % (package.__name__+'.'+super_module))
         for name, obj in inspect.getmembers(py_mod_task):
@@ -203,23 +194,29 @@ class CmdLineActivator(object):
 
 
     @staticmethod
-    def get_tasks():
+    def get_tasks(modules_only=False):
 
         tasks_list =[]
+        module_list = []
+        for package_name, package in task_packages.iteritems():
+            mod_names = []
+            for _, modname, _ in pkgutil.iter_modules(package.__path__):
+                mod_names.append(modname)
 
-        mod_names = []
 
-        package = lsst.pipe.base.examples
-        for _, modname, _ in pkgutil.iter_modules(package.__path__): mod_names.append(modname)
-
-
-        for module in mod_names:
-            task_module=package.__name__+'.'+module+'.'
-            mod_classes = [mk    for mk in pyclbr.readmodule(module, path=package.__path__).keys()]
-            for m in mod_classes:
-                if m.upper().find('TASK') > -1 and m not in ['SuperParTask', 'SuperSeqTask', 'Task', 'SuperTask']:
-                    tasks_list.append(task_module+m)
-        return tasks_list
+            for module in mod_names:
+                task_module=package.__name__+'.'+module
+                module_list.append(task_module)
+                if not modules_only:
+                    classes_map = pyclbr.readmodule(module, path=package.__path__)
+                    mod_classes = [mk for mk in classes_map.keys() if classes_map[mk].module == module]
+                    for m in mod_classes:
+                        if m.upper().find('TASK') > -1 and m not in ['SuperParTask', 'SuperSeqTask', 'Task', 'SuperTask']:
+                            tasks_list.append(task_module+'.'+m)
+        if modules_only:
+            return module_list
+        else:
+            return tasks_list
 
 
 
@@ -228,6 +225,7 @@ class CmdLineActivator(object):
         parser_activator = ActivatorParser(description='CmdLine Activator')
         parser_activator.add_argument('taskname', nargs='?', type=str, help='name of the task')
         parser_activator.add_argument('-lt','--list_tasks', action="store_true", default=False, help='list tasks available')
+        parser_activator.add_argument('-lm','--list_modules', action="store_true", default=False, help='list modules available')
         parser_activator.add_argument('--extras', action="store_true", default=False, help='Add extra parameters after it')
 
 
@@ -235,16 +233,21 @@ class CmdLineActivator(object):
             idx=sys.argv.index('--extras')
             args1 = sys.argv[1:idx]
             args = parser_activator.parse_args(args1)
+            args2 = sys.argv[idx+1:]
         except ValueError:
             args = parser_activator.parse_args()
 
+        if args.list_modules :
+            for i in cls.get_tasks(modules_only=True):
+                print(i)
+            sys.exit()
 
         if args.list_tasks :
             for i in cls.get_tasks():
                 print(i)
             sys.exit()
 
-        args2 = sys.argv[idx+1:]
+
 
 
         super_taskname = args.taskname
