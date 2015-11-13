@@ -4,6 +4,8 @@ basetask
 from __future__ import absolute_import, division, print_function
 import networkx as nx
 from .basetask import Task, TaskError
+from lsst.pipe.base.basestruct import Struct
+
 
 __all__ = ["SuperTask", "SuperSeqTask", "SuperParTask"]
 
@@ -13,10 +15,12 @@ class SuperTask(Task):
     SuperTask Generic
     """
 
-    def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
+    def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None, input=None):
         super(SuperTask, self).__init__(config, name, parent_task, log, activator)
 
         self._parser = None
+        self.input = Struct()
+        self.output = None
 
     @property
     def parser(self):
@@ -282,14 +286,21 @@ class SuperSeqTask(SuperTask):
         """
         print('I am running %s Using %s activator' % (self.name, self.activator))
         if self._first is not None:
+            if self._first.input is not None:
+                self.input = self._first.input
             self._first.run(dataRef, *args, **kwargs)
+            self.input.mergeItems(self._first.output, *self._first.output.getDict().keys())
         self._current = self._first
         while True:
             if not self._subgraph.successors(self._current):
                 break
             else:
                 self._current = self._subgraph.successors(self._current)[0]
+                self._current.input = self.input
                 self._current.run(dataRef, *args, **kwargs)
+                self.input.mergeItems(self._current.output, *self._current.output.getDict().keys())
+
+        self.output = self.input
 
 
 
@@ -342,6 +353,7 @@ class SuperParTask(SuperTask):
                 if self._first is None:
                     self._first = task
                 self._subgraph.add_node(task, label = task.name, kind=self._task_kind)
+
         return self
 
 
@@ -352,7 +364,12 @@ class SuperParTask(SuperTask):
         """
         print('I am running %s Using %s activator' % (self.name, self.activator))
         for node in self._subgraph.nodes():
+            node.input = self.input
             node.run(dataRef, *args, **kwargs)
+            self.input.mergeItems(node.output, *node.output.getDict().keys())
+
+        self.output = self.input
+
 
 
 

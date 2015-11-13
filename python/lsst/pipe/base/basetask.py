@@ -8,6 +8,8 @@ import contextlib
 import lsstDebug
 import lsst.pex.logging as pexLog
 import lsst.daf.base as dafBase
+from lsst.pipe.base.basestruct import Struct
+
 
 __all__ = ["Task", "TaskError"]
 
@@ -20,8 +22,8 @@ def wraprun(func):
     :return:
     """
     def inner(instance,*args, **kwargs):
-        instance.pre_run(*args, **kwargs)
-        temp = func(instance,*args, **kwargs)
+        instance.pre_run()
+        temp = func(instance, *args, **kwargs)
         instance.post_run(*args, **kwargs)
         return temp
     return inner
@@ -55,7 +57,7 @@ class Task(object):
     _default_name = None
     _parent_name = None
 
-    def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
+    def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None, input=None):
         """
         !Create a Task
         @param[in] config       configuration for this task (an instance of self.ConfigClass,
@@ -76,6 +78,8 @@ class Task(object):
         self._completed = False
         self._task_kind = 'Task'
         self._activator = activator
+        self.input = input
+        self.output = None
 
         if parent_task is not None:
             if name is None:

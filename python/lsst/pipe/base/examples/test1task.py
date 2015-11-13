@@ -4,6 +4,7 @@ Test1 Task
 from __future__ import absolute_import, division, print_function
 import lsst.pipe.base.basetask as basetask
 from lsst.pipe.base.basestruct import Struct
+
 import lsst.pex.config as pexConfig
 
 
@@ -17,6 +18,7 @@ class Test1Config(pexConfig.Config):
         default=False,
     )
 
+@basetask.wrapclass(basetask.wraprun)
 class Test1Task(basetask.Task):
     """
     Task
@@ -29,10 +31,9 @@ class Test1Task(basetask.Task):
 
 
     def pre_run(self):
-        pass
-        print("Custom pre run commands")
+        print("Custom pre run commands at %s" % self.name)
 
-    def run(self, dataRef):
+    def run(self, dataRef, *args, **kwargs):
         """
         Run method
         :return:
@@ -41,9 +42,11 @@ class Test1Task(basetask.Task):
         if self.config.do_print:
             print("Displaying Info...")
 
-        return Struct(
+        self.output = Struct(
             val1=10.,
-            str1=10)
+            str1='test')
+
+        return self.output
 
     def __str__(self):
         return str(self.__class__.__name__)+' named : '+self.name

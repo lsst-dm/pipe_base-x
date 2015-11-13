@@ -29,10 +29,10 @@ class SuperTestTask(SuperSeqTask):
         super(SuperTestTask, self).__init__(config, name, parent_task, log, activator)
         print('%s was initiated' % self.name)
 
-        T1 = Test1Task()
+        T1 = Test1Task(name='phase 1')
         T1.config.do_print = True
-        T2 = Test2Task()
-        T3 = Test2Task(name='T3')
+        T2 = Test2Task(name='phase 2')
+        T3 = Test1Task(name='phase 3')
 
         self.link(T1, T2, T3)
 
@@ -64,10 +64,10 @@ class Super2Task(SuperSeqTask):
         T6 = Test2Task(name='T6')
         T8 = Test2Task(name='T8')
         T9 = Test2Task(name='T9')
-        S1 = SuperSeqTask(name = 'S1Task', config = pexConfig.Config).link(Test1Task(name='T0'), Test1Task(name='T01'))
+        S1 = SuperSeqTask(name = 'S1Task', config=pexConfig.Config).link(Test1Task(name='T0'), Test1Task(name='T01'))
 
-        S2 = SuperSeqTask(name = 'S2Task', config = pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
-        S3 = SuperParTask(name = 'S3Task', config = pexConfig.Config)
+        S2 = SuperSeqTask(name = 'S2Task', config=pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
+        S3 = SuperParTask(name = 'S3Task', config=pexConfig.Config)
 
         S3.link(Test1Task(name='T10'), S2, Test1Task(name='T11'))
 

@@ -67,7 +67,8 @@ class Struct(object):
         @throw RuntimeError if name already exists or starts with __ (two underscores)
         """
         if hasattr(self, name):
-            raise RuntimeError("Item %s already exists" % (name,))
+            pass
+            #raise RuntimeError("Item %s already exists" % (name,))
         if name.startswith("__"):
             raise RuntimeError("Item name %r invalid; must not begin with __" % (name,))
         setattr(self, name, val)
