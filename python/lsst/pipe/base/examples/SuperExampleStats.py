@@ -28,10 +28,10 @@ class AllStatTask(SuperSeqTask):
         print('%s was initiated' % self.name)
 
         Mean = ExampleMeanTask()
-        Mean.config.numSigmaClip = 3
+        Mean.config.numSigmaClip = 3.0
 
         Mean2 = ExampleMeanTask(name='mean_2')
-        Mean2.config.numSigmaClip = 5
+        Mean2.config.numSigmaClip = 5.0
 
         Std = ExampleStdTask()
 
