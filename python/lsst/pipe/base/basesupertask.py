@@ -275,21 +275,21 @@ class SuperSeqTask(SuperTask):
         return self
 
 
-    def run(self):
+    def run(self, dataRef, *args, **kwargs):
         """
         Run method for supertask, need to check for order
         :return:
         """
         print('I am running %s Using %s activator' % (self.name, self.activator))
         if self._first is not None:
-            self._first.run()
+            self._first.run(dataRef, *args, **kwargs)
         self._current = self._first
         while True:
             if not self._subgraph.successors(self._current):
                 break
             else:
                 self._current = self._subgraph.successors(self._current)[0]
-                self._current.run()
+                self._current.run(dataRef, *args, **kwargs)
 
 
 
@@ -345,14 +345,14 @@ class SuperParTask(SuperTask):
         return self
 
 
-    def run(self):
+    def run(self ,dataRef, *args, **kwargs):
         """
         Run method for supertask, need to check for order
         :return:
         """
         print('I am running %s Using %s activator' % (self.name, self.activator))
         for node in self._subgraph.nodes():
-            node.run()
+            node.run(dataRef, *args, **kwargs)
 
 
 
