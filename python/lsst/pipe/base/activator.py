@@ -121,7 +121,6 @@ class CmdLineActivator(object):
                 with profile(profile_name, log):
                     # Run the task using self.__call__
                     #result_list = map(self, target_list)
-                    print(len(target_list))
                     for target in target_list:
                         data_ref , kwargs = target
                         result = None
