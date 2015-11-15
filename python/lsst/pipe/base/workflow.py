@@ -5,10 +5,24 @@ from __future__ import absolute_import, division, print_function
 import networkx as nx
 from lsst.pipe.base.basestruct import Struct
 from lsst.pipe.base.basesupertask import SuperTask
+import lsst.pex.config as pexConfig
 
 
 
 __all__ = ["WorkFlowTask", "WorkFlowSeqTask", "WorkFlowParTask"]
+
+
+
+class WorkFlowConfig(pexConfig.Config):
+    """
+    Config for Wrokflow
+    """
+    minval = pexConfig.Field(
+        dtype=int,
+        doc="Min value",
+        default=2,
+    )
+
 
 
 class WorkFlowTask(SuperTask):
