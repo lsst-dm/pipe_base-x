@@ -33,12 +33,14 @@ import contextlib
 from lsst.pex.logging import getDefaultLog
 from .argumentParser import ArgumentParser
 import argparse as argp
+from lsst.pipe.base.basesupertask import SuperTask
+
 import importlib
 
 
-__all__ = ["CmdLineActivator"]
+__all__ = ["ActivatorTask", "CmdLineActivatorTask"]
 
-task_packages = {'lsst.pipe.base.examples':None}
+task_packages = {'lsst.pipe.base.examples':None,  'lsst.pipe.tasks':None}
 
 for pkg in task_packages.keys():
    task_packages[pkg]=importlib.import_module(pkg)
@@ -88,8 +90,18 @@ class ClassName(Exception):
         self.errs = errs
 
 
-class CmdLineActivator(object):
+class ActivatorTask(SuperTask):
+    """ Hook for other activators
+    """
+    def __init(self):
+        pass
+        self.SuperTask = SuperTask
+
+
+
+class CmdLineActivatorTask(ActivatorTask):
     def __init__(self, SuperTask, parsed_cmd, return_results=False):
+        super(CmdLineActivatorTask, self).__init__(SuperTask)
 
         self.SuperTask = SuperTask
         self.return_results = bool(return_results)
@@ -155,7 +167,9 @@ class CmdLineActivator(object):
         super_module = None
 
 
+
         for package_name, package in task_packages.iteritems():
+            print(package.__path__)
             mod_names = []
             for _, modname, _ in pkgutil.iter_modules(package.__path__): mod_names.append(modname)
 
@@ -166,11 +180,13 @@ class CmdLineActivator(object):
                     super_module = module
                     break    # First instance
 
-        if super_module:
-            py_mod_task=__import__(package.__name__+'.'+super_module, fromlist=" ")
-        else:
-            print("\nSuper Task %s not found!\n" % super_taskname)
-            return classTaskInstance, classConfigInstance
+            if super_module:
+                print(package.__name__+'.'+super_module)
+                py_mod_task=__import__(package.__name__+'.'+super_module, fromlist=" ")
+                break
+            else:
+                print("\nSuper Task %s not found!\n" % super_taskname)
+                return classTaskInstance, classConfigInstance
 
         print('\nClasses inside module %s : \n ' % (package.__name__+'.'+super_module))
         for name, obj in inspect.getmembers(py_mod_task):

@@ -9,13 +9,13 @@ import lsst.pex.config as pexConfig
 
 
 
-__all__ = ["WorkFlowTask", "WorkFlowSeqTask", "WorkFlowParTask"]
+__all__ = ["WorkFlowTask", "WorkFlowSeqTask", "WorkFlowParTask", "WorkFlowConfig"]
 
 
 
 class WorkFlowConfig(pexConfig.Config):
     """
-    Config for Wrokflow
+    Config for Workflow
     """
     minval = pexConfig.Field(
         dtype=int,
@@ -29,6 +29,8 @@ class WorkFlowTask(SuperTask):
     """
     Workflow Generic
     """
+    ConfigClass = WorkFlowConfig
+    _default_name = 'WorkFlowTask'
 
     def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None, input=None):
         super(WorkFlowTask, self).__init__(config, name, parent_task, log, activator)

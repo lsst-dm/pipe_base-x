@@ -3,7 +3,7 @@ basetask
 """
 from __future__ import absolute_import, division, print_function
 import networkx as nx
-from .basetask import Task, TaskError
+from .task import Task, TaskError
 from lsst.pipe.base.basestruct import Struct
 
 

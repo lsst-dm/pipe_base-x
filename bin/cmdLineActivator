@@ -1,3 +1,3 @@
 #!/usr/bin/env ipython --
-from lsst.pipe.base.activator import CmdLineActivator
-CmdLineActivator.parse_and_run()
+from lsst.pipe.base.activator import CmdLineActivatorTask
+CmdLineActivatorTask.parse_and_run()
