@@ -30,14 +30,14 @@ class Test1Task(SuperTask):
         super(Test1Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
 
 
-    def execute(self):
-        pass
+    def execute(self, dataRef):
+        return self.run()
 
 
     def pre_run(self):
         print("Custom pre run commands at %s" % self.name)
 
-    def run(self, dataRef, *args, **kwargs):
+    def run(self):
         """
         Run method
         :return:

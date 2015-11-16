@@ -31,5 +31,5 @@ class SuperTask(Task):
     def parser(self, parser):
         self._parser = parser
 
-    def execute(self):
-        pass
+    def execute(self, dataRef):
+        return self.run()

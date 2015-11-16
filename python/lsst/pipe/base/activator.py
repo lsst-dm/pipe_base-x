@@ -140,7 +140,7 @@ class CmdLineActivatorTask(ActivatorTask):
                         data_ref, kwargs = target
                         result = None
                         super_task = self.make_task(args=target)
-                        result = super_task.run(data_ref, **kwargs)
+                        result = super_task.execute(data_ref, **kwargs)
 
             else:
                 log.warn("Not running the task because there is no data to process; "

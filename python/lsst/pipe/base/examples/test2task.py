@@ -30,6 +30,8 @@ class Test2Task(SuperTask):
     def __init__(self, *args, **kwargs):
         super(Test2Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
 
+    def execute(self, dataRef):
+        return self.run()
 
     def pre_run(self):
         #check for inputs
@@ -48,7 +50,7 @@ class Test2Task(SuperTask):
         else:
             print('good to go')
 
-    def run(self, dataRef):
+    def run(self):
         """
         Run method
         :return:

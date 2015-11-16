@@ -69,11 +69,17 @@ class ExampleMeanTask(SuperTask):
         self._statsControl.setNumIter(self.config.numIter)
         self._statsControl.setAndMask(self._badPixelMask)
 
+
     @pipeBase.timeMethod
-    def run(self, dataRef):
+    def execute(self, dataRef):
 
         calExp = dataRef.get("calexp")
         maskedImage = calExp.getMaskedImage()
+        return self.run(maskedImage)
+
+
+
+    def run(self, maskedImage):
 
         statObj = afwMath.makeStatistics(maskedImage, afwMath.MEANCLIP | afwMath.STDEVCLIP | afwMath.ERRORS,
             self._statsControl)
@@ -85,6 +91,8 @@ class ExampleMeanTask(SuperTask):
             meanErr = meanErr,
         )
         return self.output
+
+
 
 @basetask.wrapclass(basetask.wraprun)
 class ExampleStdTask(SuperTask):
@@ -106,11 +114,13 @@ class ExampleStdTask(SuperTask):
         self._statsControl.setAndMask(self._badPixelMask)
 
     @pipeBase.timeMethod
-    def run(self, dataRef):
-
+    def execute(self, dataRef):
         calExp = dataRef.get("calexp")
         maskedImage = calExp.getMaskedImage()
 
+
+
+    def run(self, maskedImage):
         statObj = afwMath.makeStatistics(maskedImage, afwMath.MEANCLIP | afwMath.STDEVCLIP | afwMath.ERRORS,
             self._statsControl)
         stdDev, stdDevErr = statObj.getResult(afwMath.STDEVCLIP)

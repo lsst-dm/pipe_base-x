@@ -298,7 +298,7 @@ class WorkFlowSeqTask(WorkFlowTask):
         return self
 
 
-    def run(self, dataRef, *args, **kwargs):
+    def execute(self, dataRef, *args, **kwargs):
         """
         Run method for supertask, need to check for order
         :return:
@@ -307,7 +307,7 @@ class WorkFlowSeqTask(WorkFlowTask):
         if self._first is not None:
             if self._first.input is not None:
                 self.input = self._first.input
-            self._first.run(dataRef, *args, **kwargs)
+            self._first.execute(dataRef, *args, **kwargs)
             self.input.mergeItems(self._first.output, *self._first.output.getDict().keys())
         self._current = self._first
         while True:
@@ -316,7 +316,7 @@ class WorkFlowSeqTask(WorkFlowTask):
             else:
                 self._current = self._subgraph.successors(self._current)[0]
                 self._current.input = self.input
-                self._current.run(dataRef, *args, **kwargs)
+                self._current.execute(dataRef, *args, **kwargs)
                 self.input.mergeItems(self._current.output, *self._current.output.getDict().keys())
 
         self.output = self.input
@@ -376,7 +376,7 @@ class WorkFlowParTask(WorkFlowTask):
         return self
 
 
-    def run(self ,dataRef, *args, **kwargs):
+    def execute(self ,dataRef, *args, **kwargs):
         """
         Run method for supertask, need to check for order
         :return:
@@ -384,7 +384,7 @@ class WorkFlowParTask(WorkFlowTask):
         print('I am running %s Using %s activator' % (self.name, self.activator))
         for node in self._subgraph.nodes():
             node.input = self.input
-            node.run(dataRef, *args, **kwargs)
+            node.execute(dataRef, *args, **kwargs)
             self.input.mergeItems(node.output, *node.output.getDict().keys())
 
         self.output = self.input
