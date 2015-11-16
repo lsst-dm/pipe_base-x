@@ -183,9 +183,10 @@ class CmdLineActivatorTask(ActivatorTask):
             if super_module:
                 print(package.__name__+'.'+super_module)
                 py_mod_task=__import__(package.__name__+'.'+super_module, fromlist=" ")
-                break
+                break # First instance
             else:
                 print("\nSuper Task %s not found!\n" % super_taskname)
+                sys.exit()
                 return classTaskInstance, classConfigInstance
 
         print('\nClasses inside module %s : \n ' % (package.__name__+'.'+super_module))
