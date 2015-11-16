@@ -2,9 +2,9 @@
 Test1 Task
 """
 from __future__ import absolute_import, division, print_function
-import lsst.pipe.base.basetask as basetask
+from lsst.pipe.base.basesupertask import SuperTask
 from lsst.pipe.base.basestruct import Struct
-
+import lsst.pipe.base.basetask as basetask
 import lsst.pex.config as pexConfig
 
 
@@ -19,15 +19,19 @@ class Test1Config(pexConfig.Config):
     )
 
 @basetask.wrapclass(basetask.wraprun)
-class Test1Task(basetask.Task):
+class Test1Task(SuperTask):
     """
     Task
     """
     ConfigClass = Test1Config  # ConfigClass = pexConfig.Config
-    _default_name = 'test1'
+    _default_name = 'Test1'
 
     def __init__(self, *args, **kwargs):
         super(Test1Task, self).__init__(*args, **kwargs)  # # P3 would be super().__init__()
+
+
+    def execute(self):
+        pass
 
 
     def pre_run(self):
@@ -51,7 +55,3 @@ class Test1Task(basetask.Task):
     def __str__(self):
         return str(self.__class__.__name__)+' named : '+self.name
 
-if __name__ == '__main__':
-
-    MyTest = Test1Task()
-    MyTest.run()

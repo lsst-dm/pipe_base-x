@@ -3,6 +3,7 @@ Test2 Task
 """
 from __future__ import absolute_import, division, print_function
 from lsst.pipe.base.basetask import Task
+from lsst.pipe.base.basesupertask import SuperTask
 import lsst.pipe.base.basetask as basetask
 from lsst.pipe.base.basestruct import Struct
 import lsst.pex.config as pexConfig
@@ -19,7 +20,7 @@ class Test2Config(pexConfig.Config):
     )
 
 @basetask.wrapclass(basetask.wraprun)
-class Test2Task(Task):
+class Test2Task(SuperTask):
     """
     Task
     """
@@ -64,7 +65,3 @@ class Test2Task(Task):
     def __str__(self):
         return str(self.__class__.__name__)+' named : '+self.name
 
-if __name__ == '__main__':
-
-    MyTest = Test2Task()
-    MyTest.run()

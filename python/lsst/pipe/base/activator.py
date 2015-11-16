@@ -40,16 +40,18 @@ import importlib
 
 __all__ = ["ActivatorTask", "CmdLineActivatorTask"]
 
-task_packages = {'lsst.pipe.base.examples':None,  'lsst.pipe.tasks':None}
+task_packages = {'lsst.pipe.base.examples': None, 'lsst.pipe.tasks': None, 'lsst.obs.sdss': None}
 
 for pkg in task_packages.keys():
-   task_packages[pkg]=importlib.import_module(pkg)
+    task_packages[pkg] = importlib.import_module(pkg)
+
 
 class ActivatorParser(argp.ArgumentParser):
     def error(self, message):
         sys.stderr.write('error: %s\n' % message)
         self.print_help()
         sys.exit(2)
+
 
 @contextlib.contextmanager
 def profile(filename, log=None):
@@ -74,6 +76,7 @@ def profile(filename, log=None):
         yield
         return
     from cProfile import Profile
+
     profile = Profile()
     if log is not None:
         log.info("Enabling cProfile profiling")
@@ -84,6 +87,7 @@ def profile(filename, log=None):
     if log is not None:
         log.info("cProfile stats written to %s" % filename)
 
+
 class ClassName(Exception):
     def __init__(self, msg, errs):
         super(ClassName, self).__init__(msg)
@@ -93,10 +97,9 @@ class ClassName(Exception):
 class ActivatorTask(SuperTask):
     """ Hook for other activators
     """
+
     def __init(self):
         pass
-        self.SuperTask = SuperTask
-
 
 
 class CmdLineActivatorTask(ActivatorTask):
@@ -105,14 +108,14 @@ class CmdLineActivatorTask(ActivatorTask):
 
         self.SuperTask = SuperTask
         self.return_results = bool(return_results)
-        self.config = parsed_cmd.config
-        self.log = parsed_cmd.log
-        self.doRaise = bool(parsed_cmd.doraise)
-        self.clobber_config = bool(parsed_cmd.clobberConfig)
-        #self.do_backup = not bool(parsed_cmd.noBackupConfig)
-        self.parsed_cmd = parsed_cmd
-        self.num_processes = 1 #int(getattr(parsed_cmd, 'processes', 1))
-
+        if parsed_cmd:
+            self.config = parsed_cmd.config
+            self.log = parsed_cmd.log
+            self.doRaise = bool(parsed_cmd.doraise)
+            self.clobber_config = bool(parsed_cmd.clobberConfig)
+            # self.do_backup = not bool(parsed_cmd.noBackupConfig)
+            self.parsed_cmd = parsed_cmd
+        self.num_processes = 1  #int(getattr(parsed_cmd, 'processes', 1))
 
 
     def make_task(self, parsedCmd=None, args=None):
@@ -122,7 +125,7 @@ class CmdLineActivatorTask(ActivatorTask):
         return True
 
     def execute(self):
-        result_list=[]
+        result_list = []
 
         if self.precall():
             profile_name = self.parsed_cmd.profile if hasattr(self.parsed_cmd, "profile") else None
@@ -132,16 +135,16 @@ class CmdLineActivatorTask(ActivatorTask):
             if len(target_list) > 0:
                 with profile(profile_name, log):
                     # Run the task using self.__call__
-                    #result_list = map(self, target_list)
+                    # result_list = map(self, target_list)
                     for target in target_list:
-                        data_ref , kwargs = target
+                        data_ref, kwargs = target
                         result = None
                         super_task = self.make_task(args=target)
                         result = super_task.run(data_ref, **kwargs)
 
             else:
                 log.warn("Not running the task because there is no data to process; "
-                    "you may preview data using \"--show data\"")
+                         "you may preview data using \"--show data\"")
 
 
     def display_tree(self):
@@ -153,11 +156,9 @@ class CmdLineActivatorTask(ActivatorTask):
             self.SuperTask.write_tree()
 
 
-
     @staticmethod
     def get_target_list(parsed_cmd, **kwargs):
         return [(ref, kwargs) for ref in parsed_cmd.id.refList]
-
 
 
     @staticmethod
@@ -166,37 +167,37 @@ class CmdLineActivatorTask(ActivatorTask):
         classConfigInstance = None
         super_module = None
 
-
-
         for package_name, package in task_packages.iteritems():
-            print(package.__path__)
             mod_names = []
             for _, modname, _ in pkgutil.iter_modules(package.__path__): mod_names.append(modname)
 
             for module in mod_names:
                 classes_map = pyclbr.readmodule(module, path=package.__path__)
-                mod_classes = [mk.upper() for mk in classes_map.keys() if classes_map[mk].module.upper() == module.upper()]
+                mod_classes = [mk.upper() for mk in classes_map.keys() if
+                               classes_map[mk].module.upper() == module.upper()]
                 if super_taskname.upper() in mod_classes:
                     super_module = module
-                    break    # First instance
+                    break  # First instance
 
             if super_module:
-                print(package.__name__+'.'+super_module)
-                py_mod_task=__import__(package.__name__+'.'+super_module, fromlist=" ")
-                break # First instance
-            else:
-                print("\nSuper Task %s not found!\n" % super_taskname)
-                sys.exit()
-                return classTaskInstance, classConfigInstance
+                print(package.__name__ + '.' + super_module)
+                break
 
-        print('\nClasses inside module %s : \n ' % (package.__name__+'.'+super_module))
+        if super_module:
+            py_mod_task = __import__(package.__name__ + '.' + super_module, fromlist=" ")
+        else:
+            print("\nSuper Task %s not found!\n" % super_taskname)
+            sys.exit()
+            return classTaskInstance, classConfigInstance
+
+        print('\nClasses inside module %s : \n ' % (package.__name__ + '.' + super_module))
         for name, obj in inspect.getmembers(py_mod_task):
             if inspect.isclass(obj):
                 if obj.__module__ == py_mod_task.__name__:
                     print(super_module + '.' + obj.__name__)
                 if obj.__name__.upper() == super_taskname.upper():
                     classTaskInstance = obj
-                if obj.__name__.upper() == (super_taskname[:-4]+'Config').upper():
+                if obj.__name__.upper() == (super_taskname[:-4] + 'Config').upper():
                     classConfigInstance = obj
         print()
 
@@ -204,7 +205,8 @@ class CmdLineActivatorTask(ActivatorTask):
             raise ClassName(' no superTaskClass %s found: Task or similiar' % (super_taskname), None)
 
         if classConfigInstance == None:
-            raise ClassName(' no superConfig Class %s found: Task or similiar' % (super_taskname.replace('Task','Config')), None)
+            raise ClassName(
+                ' no superConfig Class %s found: Task or similiar' % (super_taskname.replace('Task', 'Config')), None)
 
         return classTaskInstance, classConfigInstance
 
@@ -212,56 +214,71 @@ class CmdLineActivatorTask(ActivatorTask):
     @staticmethod
     def get_tasks(modules_only=False):
 
-        tasks_list =[]
+        tasks_list = []
         module_list = []
         for package_name, package in task_packages.iteritems():
             mod_names = []
             for _, modname, _ in pkgutil.iter_modules(package.__path__):
                 mod_names.append(modname)
 
-
             for module in mod_names:
-                task_module=package.__name__+'.'+module
+                task_module = package.__name__ + '.' + module
                 module_list.append(task_module)
                 if not modules_only:
                     classes_map = pyclbr.readmodule(module, path=package.__path__)
                     mod_classes = [mk for mk in classes_map.keys() if classes_map[mk].module == module]
                     for m in mod_classes:
-                        if m.upper().find('TASK') > -1 and m not in ['SuperParTask', 'SuperSeqTask', 'Task', 'SuperTask']:
-                            tasks_list.append(task_module+'.'+m)
+                        if m.upper().find('TASK') > -1 and m not in ['SuperParTask', 'SuperSeqTask', 'Task',
+                                                                     'SuperTask']:
+                            tasks_list.append(task_module + '.' + m)
         if modules_only:
             return module_list
         else:
             return tasks_list
 
 
-
     @classmethod
     def parse_and_run(cls):
         parser_activator = ActivatorParser(description='CmdLine Activator')
         parser_activator.add_argument('taskname', nargs='?', type=str, help='name of the task')
-        parser_activator.add_argument('-lt','--list_tasks', action="store_true", default=False, help='list tasks available')
-        parser_activator.add_argument('-lm','--list_modules', action="store_true", default=False, help='list modules available')
-        parser_activator.add_argument('--extras', action="store_true", default=False, help='Add extra parameters after it')
-
+        parser_activator.add_argument('-lt', '--list_tasks', action="store_true", default=False,
+                                      help='list tasks available')
+        parser_activator.add_argument('-lm', '--list_modules', action="store_true", default=False,
+                                      help='list modules available')
+        parser_activator.add_argument('--show_tree', action="store_true", default=False,
+                                      help='show workflow tree, generate dot file and exit')
+        parser_activator.add_argument('--extras', action="store_true", default=False,
+                                      help='Add extra parameters after it')
 
         try:
-            idx=sys.argv.index('--extras')
+            idx = sys.argv.index('--extras')
             args1 = sys.argv[1:idx]
             args = parser_activator.parse_args(args1)
-            args2 = sys.argv[idx+1:]
+            args2 = sys.argv[idx + 1:]
         except ValueError:
             args = parser_activator.parse_args()
 
-        if args.list_modules :
+        if args.list_modules:
             for i in cls.get_tasks(modules_only=True):
                 print(i)
             sys.exit()
 
-        if args.list_tasks :
+        if args.list_tasks:
             for i in cls.get_tasks():
                 print(i)
             sys.exit()
+
+        if args.show_tree:
+
+            super_taskname = args.taskname
+            SuperTaskClass, SuperTaskConfig = cls.loadSuperTask(super_taskname)
+            SuperTask = SuperTaskClass(activator='cmdLine')
+
+            CmdLineClass = cls(SuperTask, None)
+            CmdLineClass.display_tree()
+            CmdLineClass.generate_dot()
+            sys.exit()
+
 
 
 

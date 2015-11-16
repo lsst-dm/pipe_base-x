@@ -9,7 +9,7 @@ import lsstDebug
 import lsst.pex.logging as pexLog
 import lsst.daf.base as dafBase
 from lsst.pipe.base.basestruct import Struct
-
+from .timer import logInfo
 import lsstDebug
 from lsst.pex.config import ConfigurableField
 
@@ -153,6 +153,10 @@ class Task(object):
         :return:
         """
         return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
 
     @property
     def activator(self):

@@ -7,6 +7,8 @@ import lsst.afw.math as afwMath
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
 import lsst.pipe.base.basetask as basetask
+from lsst.pipe.base.basesupertask import SuperTask
+
 
 
 
@@ -50,7 +52,7 @@ class ExampleStdConfig(pexConfig.Config):
     )
 
 @basetask.wrapclass(basetask.wraprun)
-class ExampleMeanTask(basetask.Task):
+class ExampleMeanTask(SuperTask):
 
     ConfigClass = ExampleMeanConfig
     _DefaultName = "exampleMean"
@@ -85,7 +87,7 @@ class ExampleMeanTask(basetask.Task):
         return self.output
 
 @basetask.wrapclass(basetask.wraprun)
-class ExampleStdTask(basetask.Task):
+class ExampleStdTask(SuperTask):
 
     ConfigClass = ExampleMeanConfig
     _DefaultName = "exampleStd"

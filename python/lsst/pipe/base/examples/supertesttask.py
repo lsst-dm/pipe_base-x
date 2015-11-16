@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from lsst.pipe.base.basesupertask import SuperTask, SuperSeqTask, SuperParTask
+from lsst.pipe.base.basesupertask import SuperTask
+from lsst.pipe.base.workflow import WorkFlowSeqTask, WorkFlowParTask
+
 from lsst.pipe.base.examples.test1task import Test1Task
 from lsst.pipe.base.examples.test2task import Test2Task
 
@@ -18,12 +20,12 @@ class SuperTestConfig(pexConfig.Config):
         default=2,
     )
 
-class SuperTestTask(SuperSeqTask):
+class SuperTestTask(WorkFlowSeqTask):
     """
     SuperTest
     """
     ConfigClass = SuperTestConfig
-    _default_name = 'Super_Task_1'
+    _default_name = 'Super_Flow_1'
 
     def __init__(self, config=None, name=None, parent_task=None, log=None, activator=None):
         super(SuperTestTask, self).__init__(config, name, parent_task, log, activator)
@@ -47,7 +49,7 @@ class Super2Config(pexConfig.Config):
         default=2,
     )
 
-class Super2Task(SuperSeqTask):
+class Super2Task(WorkFlowSeqTask):
     """
     SuperTest
     """
@@ -64,20 +66,13 @@ class Super2Task(SuperSeqTask):
         T6 = Test2Task(name='T6')
         T8 = Test2Task(name='T8')
         T9 = Test2Task(name='T9')
-        S1 = SuperSeqTask(name = 'S1Task', config=pexConfig.Config).link(Test1Task(name='T0'), Test1Task(name='T01'))
+        S1 = WorkFlowSeqTask(name = 'S1Task').link(Test1Task(name='T0'), Test1Task(name='T01'))
 
-        S2 = SuperSeqTask(name = 'S2Task', config=pexConfig.Config).link(Test1Task(name='T4'), Test1Task(name='T5'))
-        S3 = SuperParTask(name = 'S3Task', config=pexConfig.Config)
+        S2 = WorkFlowSeqTask(name = 'S2Task').link(Test1Task(name='T4'), Test1Task(name='T5'))
+        S3 = WorkFlowParTask(name = 'S3Task')
 
         S3.link(Test1Task(name='T10'), S2, Test1Task(name='T11'))
 
 
         self.link(S1, T1, T2, T3, S3,  T8 ,T9 )
 
-
-#if __name__ == '__main__':
-#    MyTest = Super2Task()
-##    MyTest.write_tree()
-#    MyTest.run()
-#    print()
-#    MyTest.print_tree()

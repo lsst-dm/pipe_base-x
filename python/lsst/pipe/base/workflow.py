@@ -243,9 +243,11 @@ class WorkFlowTask(SuperTask):
         Print Tree Ascii
         :return:
         """
-
+        print('Workflow Tree:')
+        print()
         for branch in self.get_tree():
             print(branch)
+        print()
 
 
 
