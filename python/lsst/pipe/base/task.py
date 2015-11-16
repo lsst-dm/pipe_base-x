@@ -55,7 +55,7 @@ def wraprun(func):
     :return:
     """
     def inner(instance,*args, **kwargs):
-        instance.pre_run()
+        instance.pre_run(*args, **kwargs)
         temp = func(instance, *args, **kwargs)
         instance.post_run(*args, **kwargs)
         return temp

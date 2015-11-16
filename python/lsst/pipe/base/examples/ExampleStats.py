@@ -117,6 +117,7 @@ class ExampleStdTask(SuperTask):
     def execute(self, dataRef):
         calExp = dataRef.get("calexp")
         maskedImage = calExp.getMaskedImage()
+        return self.run(maskedImage)
 
 
 

@@ -24,6 +24,8 @@ from lsst.afw.display.ds9 import mtv
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
 import lsst.pipe.base.task as basetask
+from lsst.pipe.base.basesupertask import SuperTask
+
 from .exampleStatsTasks import ExampleSigmaClippedStatsTask
 
 # The following block adds links to this task from the Task Documentation page.
@@ -49,7 +51,7 @@ class ExampleCmdLineConfig(pexConfig.Config):
         default = False,
     )
 
-class ExampleCmdLineTask(basetask.Task):
+class ExampleCmdLineTask(SuperTask):
     """!Example command-line task that computes simple statistics on an image
 
     \section pipeTasks_ExampleCmdLineTask_Contents Contents
@@ -113,7 +115,7 @@ class ExampleCmdLineTask(basetask.Task):
         self.makeSubtask("stats")
     
     @pipeBase.timeMethod
-    def run(self, dataRef):
+    def execute(self, dataRef):
         """!Compute a few statistics on the image plane of an exposure
         
         @param dataRef: data reference for a calibrated science exposure ("calexp")

@@ -40,7 +40,7 @@ import importlib
 
 __all__ = ["ActivatorTask", "CmdLineActivatorTask"]
 
-task_packages = {'lsst.pipe.base.examples': None, 'lsst.pipe.tasks': None, 'lsst.obs.sdss': None}
+task_packages = {'lsst.pipe.base.examples': None, 'lsst.obs.sdss': None}
 
 for pkg in task_packages.keys():
     task_packages[pkg] = importlib.import_module(pkg)

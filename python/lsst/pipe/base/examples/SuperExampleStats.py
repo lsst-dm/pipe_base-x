@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from lsst.pipe.base.basesupertask import SuperTask, SuperSeqTask, SuperParTask
+from lsst.pipe.base.basesupertask import SuperTask
+from lsst.pipe.base.workflow import WorkFlowSeqTask, WorkFlowParTask
+
 from lsst.pipe.base.examples.ExampleStats import ExampleMeanTask
 from lsst.pipe.base.examples.ExampleStats import ExampleStdTask
 import lsst.pex.config as pexConfig
@@ -16,7 +18,7 @@ class AllStatConfig(pexConfig.Config):
         default=2,
     )
 
-class AllStatTask(SuperSeqTask):
+class AllStatTask(WorkFlowSeqTask):
     """
     SuperTest
     """
@@ -28,11 +30,10 @@ class AllStatTask(SuperSeqTask):
         print('%s was initiated' % self.name)
 
         Mean = ExampleMeanTask()
-        Mean.config.numSigmaClip = 3.0
+        Mean.config.numSigmaClip = 4.0
 
-        Mean2 = ExampleMeanTask(name='mean_2')
+        Mean2 = ExampleMeanTask(name='mean 2nd value')
         Mean2.config.numSigmaClip = 5.0
-        #Mean2 =  ExampleMeanTask(name='mean_2', config= Mean2.config)
 
         Std = ExampleStdTask()
 
