@@ -66,7 +66,7 @@ class Super2Task(WorkFlowSeqTask):
         T6 = Test2Task(name='T6')
         T8 = Test2Task(name='T8')
         T9 = Test2Task(name='T9')
-        S1 = WorkFlowSeqTask(name = 'S1Task').link(Test1Task(name='T0'), Test1Task(name='T01'))
+        S1 = WorkFlowSeqTask(name = 'S1Task').link(Test1Task(name='T_a'), Test1Task(name='T_b'))
 
         S2 = WorkFlowSeqTask(name = 'S2Task').link(Test1Task(name='T4'), Test1Task(name='T5'))
         S3 = WorkFlowParTask(name = 'S3Task')
