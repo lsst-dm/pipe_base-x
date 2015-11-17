@@ -151,6 +151,10 @@ class CmdLineActivatorTask(ActivatorTask):
         if hasattr(self.SuperTask, 'print_tree'):
             self.SuperTask.print_tree()
 
+    def display_config(self):
+        if hasattr(self.SuperTask, 'print_config'):
+            self.SuperTask.print_config()
+
     def generate_dot(self):
         if hasattr(self.SuperTask, 'write_tree'):
             self.SuperTask.write_tree()
@@ -245,8 +249,8 @@ class CmdLineActivatorTask(ActivatorTask):
                                       help='list tasks available')
         parser_activator.add_argument('-lm', '--list_modules', action="store_true", default=False,
                                       help='list modules available')
-        parser_activator.add_argument('--show_tree', action="store_true", default=False,
-                                      help='show workflow tree, generate dot file and exit')
+        parser_activator.add_argument('--show', nargs='+', default=(),
+                                      help='shows {tree} and/or {config}')
         parser_activator.add_argument('--extras', action="store_true", default=False,
                                       help='Add extra parameters after it')
 
@@ -268,15 +272,20 @@ class CmdLineActivatorTask(ActivatorTask):
                 print(i)
             sys.exit()
 
-        if args.show_tree:
-
+        if args.show:
             super_taskname = args.taskname
             SuperTaskClass, SuperTaskConfig = cls.loadSuperTask(super_taskname)
             SuperTask = SuperTaskClass(activator='cmdLine')
-
             CmdLineClass = cls(SuperTask, None)
-            CmdLineClass.display_tree()
-            CmdLineClass.generate_dot()
+
+            for show in args.show:
+                if show == 'tree':
+                    CmdLineClass.display_tree()
+                    CmdLineClass.generate_dot()
+                elif show == 'config':
+                    CmdLineClass.display_config()
+                else:
+                    print('\nUnknown vaule for show, use {tree or config}')
             sys.exit()
 
 

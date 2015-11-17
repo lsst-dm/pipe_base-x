@@ -61,7 +61,7 @@ class WorkFlowTask(SuperTask):
         self.lines=[]
 
         if self._first is not None:
-            if (self._task_kind == 'SuperSeqTask'):
+            if (self._task_kind == 'WorkFlowSeqTask'):
                 self._current = self._first
             else:
                 self.nodes=self._subgraph.nodes_iter()
@@ -243,7 +243,8 @@ class WorkFlowTask(SuperTask):
         Print Tree Ascii
         :return:
         """
-        print('Workflow Tree:')
+        print()
+        print('* Workflow Tree * :')
         print()
         for branch in self.get_tree():
             print(branch)
@@ -341,6 +342,34 @@ class WorkFlowSeqTask(WorkFlowTask):
             lines.append(temp_line+';')
         return lines
 
+    def gconf(self, rootN=''):
+        self.list_config = []
+        rootN += self.name+'.'
+        if self._first is not None:
+            if self._first.task_kind == 'SuperTask':
+                for key,val in self._first.config.iteritems():
+                        self.list_config.append(rootN+self._first.name+'.config.'+key+' = '+str(val))
+            else:
+                temp_lines = self._first.gconf(rootN=rootN)
+                for line in temp_lines:
+                    self.list_config.append(line)
+
+        self._current = self._first
+        while True:
+            if not self._subgraph.successors(self._current):
+                break
+            else:
+                self._current = self._subgraph.successors(self._current)[0]
+                if self._current.task_kind == 'SuperTask':
+                    for key,val in self._current.config.iteritems():
+                            self.list_config.append(rootN+self._current.name+'.config.'+key+' = '+str(val))
+                else:
+                    temp_lines = self._current.gconf(rootN=rootN)
+                    for line in temp_lines:
+                        self.list_config.append(line)
+        return self.list_config
+
+
 
 
 class WorkFlowParTask(WorkFlowTask):
@@ -388,4 +417,18 @@ class WorkFlowParTask(WorkFlowTask):
             self.input.mergeItems(node.output, *node.output.getDict().keys())
 
         self.output = self.input
+
+
+    def gconf(self, rootN=''):
+        self.list_config = []
+        rootN += self.name+'.'
+        for node in self._subgraph.nodes():
+            if node.task_kind == 'SuperTask':
+                for key,val in node.config.iteritems():
+                        self.list_config.append(rootN+node.name+'.config.'+key+' = '+str(val))
+            else:
+                temp_lines = node.gconf(rootN=rootN)
+                for line in temp_lines:
+                    self.list_config.append(line)
+        return self.list_config
 

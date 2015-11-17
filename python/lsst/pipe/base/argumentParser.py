@@ -580,7 +580,6 @@ def obeyShowArgument(showOpts, config=None, exit=False):
                 fd = FilteredStream(pattern)
             else:
                 fd = sys.stdout
-
             config.saveToStream(fd, "config")
         elif what == "data":
             pass

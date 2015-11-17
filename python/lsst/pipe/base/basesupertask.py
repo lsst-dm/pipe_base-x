@@ -22,6 +22,8 @@ class SuperTask(Task):
         self.input = Struct()
         self.output = None
         self.name = self.name.replace(" ","_")
+        self._task_kind = 'SuperTask'
+
 
     @property
     def parser(self):
@@ -33,3 +35,24 @@ class SuperTask(Task):
 
     def execute(self, dataRef):
         return self.run()
+
+    def gconf(self):
+        self.list_config = []
+        rootN = self.name+'.'
+        for key,val in self.config.iteritems():
+            self.list_config.append(rootN+'config.'+key+' = '+str(val))
+        return self.list_config
+
+    def print_config(self):
+        """
+        Print Config
+        :return:
+        """
+        print()
+        print('* Configuration * :')
+        print()
+        for branch in self.gconf():
+            print(branch)
+        print()
+
+
