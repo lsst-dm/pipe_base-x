@@ -40,7 +40,7 @@ import importlib
 
 __all__ = ["ActivatorTask", "CmdLineActivatorTask"]
 
-task_packages = {'lsst.pipe.base.examples': None, 'lsst.obs.sdss': None}
+task_packages = {'lsst.pipe.base.examples': None}
 
 for pkg in task_packages.keys():
     task_packages[pkg] = importlib.import_module(pkg)
@@ -94,7 +94,7 @@ class ClassName(Exception):
         self.errs = errs
 
 
-class ActivatorTask(SuperTask):
+class ActivatorTask(object):
     """ Hook for other activators
     """
 
@@ -104,7 +104,7 @@ class ActivatorTask(SuperTask):
 
 class CmdLineActivatorTask(ActivatorTask):
     def __init__(self, SuperTask, parsed_cmd, return_results=False):
-        super(CmdLineActivatorTask, self).__init__(SuperTask)
+        super(CmdLineActivatorTask, self).__init__()
 
         self.SuperTask = SuperTask
         self.return_results = bool(return_results)
@@ -124,7 +124,7 @@ class CmdLineActivatorTask(ActivatorTask):
     def precall(self):
         return True
 
-    def execute(self):
+    def activate(self):
         result_list = []
 
         if self.precall():
@@ -302,7 +302,7 @@ class CmdLineActivatorTask(ActivatorTask):
         CmdLineClass = cls(SuperTask, parser)
         CmdLineClass.display_tree()
         CmdLineClass.generate_dot()
-        CmdLineClass.execute()
+        CmdLineClass.activate()
 
 
 
