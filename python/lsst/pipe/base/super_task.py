@@ -4,7 +4,7 @@ basetask
 from __future__ import absolute_import, division, print_function
 import networkx as nx
 from .task import Task, TaskError
-from lsst.pipe.base.basestruct import Struct
+from lsst.pipe.base.struct import Struct
 
 
 __all__ = ["SuperTask"]
