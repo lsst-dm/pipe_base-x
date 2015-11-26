@@ -306,21 +306,21 @@ class WorkFlowSeqTask(WorkFlowTask):
         """
         print('I am running %s Using %s activator' % (self.name, self.activator))
         if self._first is not None:
-            if self._first.input is not None:
-                self.input = self._first.input
+            #if self._first.input is not None:
+                #self.input = self._first.input
             self._first.execute(dataRef, *args, **kwargs)
-            self.input.mergeItems(self._first.output, *self._first.output.getDict().keys())
+            #self.input.mergeItems(self._first.output, *self._first.output.getDict().keys())
         self._current = self._first
         while True:
             if not self._subgraph.successors(self._current):
                 break
             else:
                 self._current = self._subgraph.successors(self._current)[0]
-                self._current.input = self.input
+                #self._current.input = self.input
                 self._current.execute(dataRef, *args, **kwargs)
-                self.input.mergeItems(self._current.output, *self._current.output.getDict().keys())
+                #self.input.mergeItems(self._current.output, *self._current.output.getDict().keys())
 
-        self.output = self.input
+        #self.output = self.input
 
 
 
@@ -414,9 +414,9 @@ class WorkFlowParTask(WorkFlowTask):
         for node in self._subgraph.nodes():
             node.input = self.input
             node.execute(dataRef, *args, **kwargs)
-            self.input.mergeItems(node.output, *node.output.getDict().keys())
+            #self.input.mergeItems(node.output, *node.output.getDict().keys())
 
-        self.output = self.input
+        #self.output = self.input
 
 
     def gconf(self, rootN=''):
