@@ -140,6 +140,8 @@ class CmdLineActivatorTask(ActivatorTask):
                         data_ref, kwargs = target
                         result = None
                         super_task = self.make_task(args=target)
+                        #self.log.info("Processing data ID %s" % (data_ref.dataId,))
+
                         result = super_task.execute(data_ref, **kwargs)
 
             else:

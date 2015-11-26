@@ -305,6 +305,8 @@ class WorkFlowSeqTask(WorkFlowTask):
         :return:
         """
         print('I am running %s Using %s activator' % (self.name, self.activator))
+        self.log.info("Processing data ID %s" % (dataRef.dataId,))
+
         if self._first is not None:
             #if self._first.input is not None:
                 #self.input = self._first.input
@@ -411,6 +413,8 @@ class WorkFlowParTask(WorkFlowTask):
         :return:
         """
         print('I am running %s Using %s activator' % (self.name, self.activator))
+        self.log.info("Processing data ID %s" % (dataRef.dataId,))
+
         for node in self._subgraph.nodes():
             node.input = self.input
             node.execute(dataRef, *args, **kwargs)
