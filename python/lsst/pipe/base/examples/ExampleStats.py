@@ -73,6 +73,7 @@ class ExampleMeanTask(SuperTask):
     @pipeBase.timeMethod
     def execute(self, dataRef):
 
+
         calExp = dataRef.get("raw")
         maskedImage = calExp.getMaskedImage()
         return self.run(maskedImage)
