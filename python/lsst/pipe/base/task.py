@@ -8,7 +8,7 @@ import contextlib
 import lsstDebug
 import lsst.pex.logging as pexLog
 import lsst.daf.base as dafBase
-from lsst.pipe.base.basestruct import Struct
+from lsst.pipe.base.struct import Struct
 from .timer import logInfo
 import lsstDebug
 from lsst.pex.config import ConfigurableField
