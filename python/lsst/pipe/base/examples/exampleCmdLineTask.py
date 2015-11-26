@@ -23,9 +23,6 @@
 from lsst.afw.display.ds9 import mtv
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
-import lsst.pipe.base.task as basetask
-from lsst.pipe.base.super_task import SuperTask
-
 from .exampleStatsTasks import ExampleSigmaClippedStatsTask
 
 # The following block adds links to this task from the Task Documentation page.
@@ -51,7 +48,7 @@ class ExampleCmdLineConfig(pexConfig.Config):
         default = False,
     )
 
-class ExampleCmdLineTask(SuperTask):
+class ExampleCmdLineTask(pipeBase.SuperTask):
     """!Example command-line task that computes simple statistics on an image
 
     \section pipeTasks_ExampleCmdLineTask_Contents Contents
@@ -92,12 +89,11 @@ class ExampleCmdLineTask(SuperTask):
 
     \section pipeTasks_ExampleCmdLineTask_Example A complete example of using ExampleCmdLineTask
 
-    This code is in examples/exampleCmdLineTask.py, and can be run as _e.g._
+    This code is in examples/exampleCmdLineTask.py, and can be run as follows:
     \code
-    examples/exampleCmdLineTask.py <path_to_data_repo> --id <data_id>
-    # The following will work on an NCSA lsst* computer:
-    examples/exampleCmdLineTask.py /lsst8/krughoff/diffim_data/sparse_diffim_output_v7_2 --id visit=6866601
-    # also try these flags:
+    examples/exampleCmdLineTask.py $OBS_TEST_DIR/data/input --id
+    # that will process all data; you can also try any combination of these flags:
+    --id filter=g
     --config doFail=True --doraise
     --show config data
     \endcode
@@ -110,8 +106,9 @@ class ExampleCmdLineTask(SuperTask):
 
         Call the parent class constructor and make the "stats" subtask from the config field of the same name.
         """
-        super(ExampleCmdLineTask, self).__init__(*args, **kwargs)
         #pipeBase.CmdLineTask.__init__(self, *args, **kwargs)
+        super(ExampleCmdLineTask, self).__init__(*args, **kwargs)
+
         self.makeSubtask("stats")
     
     @pipeBase.timeMethod
@@ -125,14 +122,13 @@ class ExampleCmdLineTask(SuperTask):
         - stdDev: standard deviation of image plane
         - stdDevErr: uncertainty in standard deviation
         """
+        self.log.info("Processing data ID %s" % (dataRef.dataId,))
         if self.config.doFail:
             raise pipeBase.TaskError("Raising TaskError by request (config.doFail=True)")
 
-        # Unpersist the data. In this case the data reference will retrieve a "calexp" by default,
-        # so the the string "calexp" is optiona, but the same data reference can be used
-        # to retrieve other dataset types that use the same data ID, so it is nice to be explicit
-        calExp = dataRef.get("calexp")
-        maskedImage = calExp.getMaskedImage()
+        # Unpersist the raw exposure pointed to by the data reference
+        rawExp = dataRef.get("raw")
+        maskedImage = rawExp.getMaskedImage()
 
         # Support extra debug output.
         # - 
@@ -140,7 +136,7 @@ class ExampleCmdLineTask(SuperTask):
         display = lsstDebug.Info(__name__).display
         if display:
             frame = 1
-            mtv(calExp, frame=frame, title="photocal")
+            mtv(rawExp, frame=frame, title="exposure")
 
         # return the pipe_base Struct that is returned by self.stats.run
         return self.stats.run(maskedImage)
