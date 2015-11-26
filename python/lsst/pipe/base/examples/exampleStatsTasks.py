@@ -24,7 +24,7 @@ from lsst.afw.image import MaskU
 import lsst.afw.math as afwMath
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
-import lsst.pipe.base.basetask as basetask
+import lsst.pipe.base.task as basetask
 
 
 

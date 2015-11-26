@@ -3,8 +3,8 @@ workflow
 """
 from __future__ import absolute_import, division, print_function
 import networkx as nx
-from lsst.pipe.base.basestruct import Struct
-from lsst.pipe.base.basesupertask import SuperTask
+from lsst.pipe.base.struct import Struct
+from lsst.pipe.base.super_task import SuperTask
 import lsst.pex.config as pexConfig
 
 

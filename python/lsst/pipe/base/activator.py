@@ -33,7 +33,7 @@ import contextlib
 from lsst.pex.logging import getDefaultLog
 from .argumentParser import ArgumentParser
 import argparse as argp
-from lsst.pipe.base.basesupertask import SuperTask
+from lsst.pipe.base.super_task import SuperTask
 
 import importlib
 

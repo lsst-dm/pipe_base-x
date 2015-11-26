@@ -24,7 +24,7 @@ from lsst.afw.display.ds9 import mtv
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
 import lsst.pipe.base.task as basetask
-from lsst.pipe.base.basesupertask import SuperTask
+from lsst.pipe.base.super_task import SuperTask
 
 from .exampleStatsTasks import ExampleSigmaClippedStatsTask
 

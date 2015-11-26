@@ -2,10 +2,10 @@
 Test2 Task
 """
 from __future__ import absolute_import, division, print_function
-from lsst.pipe.base.basetask import Task
-from lsst.pipe.base.basesupertask import SuperTask
-import lsst.pipe.base.basetask as basetask
-from lsst.pipe.base.basestruct import Struct
+from lsst.pipe.base.task import Task
+from lsst.pipe.base.super_task import SuperTask
+import lsst.pipe.base.task as basetask
+from lsst.pipe.base.struct import Struct
 import lsst.pex.config as pexConfig
 
 
