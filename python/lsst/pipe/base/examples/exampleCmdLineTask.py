@@ -23,7 +23,7 @@
 from lsst.afw.display.ds9 import mtv
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
-from .exampleStatsTasks import ExampleSigmaClippedStatsTask
+from lsst.pipe.tasks.exampleStatsTasks import ExampleSigmaClippedStatsTask
 
 # The following block adds links to this task from the Task Documentation page.
 # This works even for task(s) that are not in lsst.pipe.tasks.
