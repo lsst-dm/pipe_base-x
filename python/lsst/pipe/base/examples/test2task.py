@@ -4,7 +4,7 @@ Test2 Task
 from __future__ import absolute_import, division, print_function
 from lsst.pipe.base.task import Task
 from lsst.pipe.base.super_task import SuperTask
-import lsst.pipe.base.task as stask
+import lsst.pipe.base.super_task as stask
 from lsst.pipe.base.struct import Struct
 import lsst.pex.config as pexConfig
 
