@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from lsst.pipe.base.super_task import SuperTask
 from lsst.pipe.base.workflow import WorkFlowSeqTask, WorkFlowParTask
 
 from lsst.pipe.base.examples.test1task import Test1Task

@@ -6,7 +6,7 @@ from lsst.afw.image import MaskU
 import lsst.afw.math as afwMath
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
-import lsst.pipe.base.task as basetask
+import lsst.pipe.base.super_task as super_task
 from lsst.pipe.base.super_task import SuperTask
 
 
@@ -51,11 +51,11 @@ class ExampleStdConfig(pexConfig.Config):
         default = 2,
     )
 
-@basetask.wrapclass(basetask.wraprun)
+@super_task.wrapclass(super_task.wraprun)
 class ExampleMeanTask(SuperTask):
 
     ConfigClass = ExampleMeanConfig
-    _DefaultName = "exampleMean"
+    _default_name = "exampleMean"
 
     def __init__(self, *args, **kwargs):
 
@@ -95,16 +95,15 @@ class ExampleMeanTask(SuperTask):
 
 
 
-@basetask.wrapclass(basetask.wraprun)
+@super_task.wrapclass(super_task.wraprun)
 class ExampleStdTask(SuperTask):
 
     ConfigClass = ExampleMeanConfig
-    _DefaultName = "exampleStd"
+    _default_name = "exampleStd"
 
     def __init__(self, *args, **kwargs):
 
         super(ExampleStdTask, self).__init__(*args, **kwargs)
-        #basetask.Task.__init__(self, *args, **kwargs)
 
 
     def pre_run(self):
