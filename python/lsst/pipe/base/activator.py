@@ -234,7 +234,7 @@ class CmdLineActivatorTask(ActivatorTask):
                     classes_map = pyclbr.readmodule(module, path=package.__path__)
                     mod_classes = [mk for mk in classes_map.keys() if classes_map[mk].module == module]
                     for m in mod_classes:
-                        if m.upper().find('TASK') > -1 and m not in ['SuperParTask', 'SuperSeqTask', 'Task',
+                        if m.upper().find('TASK') > -1 and m not in ['WorkFlowParTask', 'WorkFlowSeqTask', 'Task',
                                                                      'SuperTask']:
                             tasks_list.append(task_module + '.' + m)
         if modules_only:
