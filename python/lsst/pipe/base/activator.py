@@ -33,12 +33,11 @@ import contextlib
 from lsst.pex.logging import getDefaultLog
 from .argumentParser import ArgumentParser
 import argparse as argp
-from lsst.pipe.base.super_task import SuperTask
 
 import importlib
 
 
-__all__ = ["ActivatorTask", "CmdLineActivatorTask"]
+__all__ = ["Activator", "CmdLineActivator"]
 
 task_packages = {'lsst.pipe.base.examples': None}
 
@@ -94,7 +93,7 @@ class ClassName(Exception):
         self.errs = errs
 
 
-class ActivatorTask(object):
+class Activator(object):
     """ Hook for other activators
     """
 
@@ -102,9 +101,9 @@ class ActivatorTask(object):
         pass
 
 
-class CmdLineActivatorTask(ActivatorTask):
+class CmdLineActivator(Activator):
     def __init__(self, SuperTask, parsed_cmd, return_results=False):
-        super(CmdLineActivatorTask, self).__init__()
+        super(CmdLineActivator, self).__init__()
 
         self.SuperTask = SuperTask
         self.return_results = bool(return_results)

@@ -251,7 +251,7 @@ class Task(object):
         finally:
             logInfo(obj = self, prefix = name + "End",   logLevel = logLevel)
     
-    
+
     @classmethod
     def makeField(cls, doc):
         """!Make an lsst.pex.config.ConfigurableField for this task
